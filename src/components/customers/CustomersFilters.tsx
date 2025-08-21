@@ -25,12 +25,12 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [filters]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleFilterChange = (key: keyof CustomerFilters, value: any) => {
+  const handleFilterChange = (key: keyof CustomerFilters, value: string | boolean | number | undefined) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value === '' ? null : value
+      [key]: value === '' ? undefined : value
     }));
   };
 
@@ -109,7 +109,7 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
               </label>
               <select
                 value={filters.payment_terms || ''}
-                onChange={(e) => handleFilterChange('payment_terms', e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) => handleFilterChange('payment_terms', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -127,8 +127,8 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
                 Invoicing Type
               </label>
               <select
-                value={filters.consolidated_invoicing === null ? '' : filters.consolidated_invoicing.toString()}
-                onChange={(e) => handleFilterChange('consolidated_invoicing', e.target.value === '' ? null : e.target.value === 'true')}
+                value={filters.consolidated_invoicing == null ? '' : filters.consolidated_invoicing.toString()}
+                onChange={(e) => handleFilterChange('consolidated_invoicing', e.target.value === '' ? undefined : e.target.value === 'true')}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -143,8 +143,8 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
                 Credit Limit
               </label>
               <select
-                value={filters.has_credit_limit === null ? '' : filters.has_credit_limit.toString()}
-                onChange={(e) => handleFilterChange('has_credit_limit', e.target.value === '' ? null : e.target.value === 'true')}
+                value={filters.has_credit_limit == null ? '' : filters.has_credit_limit.toString()}
+                onChange={(e) => handleFilterChange('has_credit_limit', e.target.value === '' ? undefined : e.target.value === 'true')}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -181,7 +181,7 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
             <span className="text-sm text-gray-400">Active filters:</span>
             {filters.search && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-600 text-red-100">
-                Search: "{filters.search}"
+                Search: &quot;{filters.search}&quot;
                 <button
                   onClick={() => handleFilterChange('search', '')}
                   className="ml-1 hover:text-red-200"
@@ -194,7 +194,7 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-600 text-red-100">
                 Terms: {PAYMENT_TERMS_OPTIONS.find(opt => opt.value === filters.payment_terms)?.label}
                 <button
-                  onClick={() => handleFilterChange('payment_terms', null)}
+                  onClick={() => handleFilterChange('payment_terms', undefined)}
                   className="ml-1 hover:text-red-200"
                 >
                   ×
@@ -205,7 +205,7 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-600 text-red-100">
                 Invoicing: {filters.consolidated_invoicing ? 'Consolidated' : 'Individual'}
                 <button
-                  onClick={() => handleFilterChange('consolidated_invoicing', null)}
+                  onClick={() => handleFilterChange('consolidated_invoicing', undefined)}
                   className="ml-1 hover:text-red-200"
                 >
                   ×
@@ -216,7 +216,7 @@ export default function CustomersFilters({ onFiltersChange, loading }: Customers
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-600 text-red-100">
                 Credit: {filters.has_credit_limit ? 'With Limit' : 'No Limit'}
                 <button
-                  onClick={() => handleFilterChange('has_credit_limit', null)}
+                  onClick={() => handleFilterChange('has_credit_limit', undefined)}
                   className="ml-1 hover:text-red-200"
                 >
                   ×

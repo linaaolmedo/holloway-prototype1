@@ -20,7 +20,7 @@ export default function FleetFilters({
 }: FleetFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleFilterChange = (field: string, value: any) => {
+  const handleFilterChange = (field: string, value: string | undefined) => {
     onFiltersChange({
       ...filters,
       [field]: value || undefined
@@ -135,7 +135,7 @@ export default function FleetFilters({
         <label className="block text-xs font-medium text-gray-400 mb-1">Assignment</label>
         <select
           value={(filters as DriverFilters).assigned?.toString() || ''}
-          onChange={(e) => handleFilterChange('assigned', e.target.value === '' ? undefined : e.target.value === 'true')}
+          onChange={(e) => handleFilterChange('assigned', e.target.value === '' ? undefined : e.target.value)}
           className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         >
           <option value="">All Drivers</option>

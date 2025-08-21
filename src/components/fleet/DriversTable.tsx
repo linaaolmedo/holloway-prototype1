@@ -66,7 +66,7 @@ export default function DriversTable({
     }
   };
 
-  const getExpiryStatus = (expiryDate: string | null, type: 'license' | 'medical') => {
+  const getExpiryStatus = (expiryDate: string | null, _type: 'license' | 'medical') => {
     if (!expiryDate) return null;
     
     const today = new Date();

@@ -39,8 +39,8 @@ export default function ReportFormModal({
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [carriers, setCarriers] = useState<any[]>([]);
-  const [equipmentTypes, setEquipmentTypes] = useState<any[]>([]);
+  const [carriers, setCarriers] = useState<Array<{ id: number; name: string }>>([]);
+  const [equipmentTypes, setEquipmentTypes] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     if (report) {
@@ -112,7 +112,7 @@ export default function ReportFormModal({
     onSubmit(submitData);
   };
 
-  const handleFilterChange = (key: keyof ReportFilters, value: any) => {
+  const handleFilterChange = (key: keyof ReportFilters, value: string | undefined) => {
     setFormData(prev => ({
       ...prev,
       filters: {
@@ -125,13 +125,25 @@ export default function ReportFormModal({
   const addToArrayFilter = (key: keyof ReportFilters, value: number) => {
     const currentArray = (formData.filters[key] as number[]) || [];
     if (!currentArray.includes(value)) {
-      handleFilterChange(key, [...currentArray, value]);
+      setFormData(prev => ({
+        ...prev,
+        filters: {
+          ...prev.filters,
+          [key]: [...currentArray, value]
+        }
+      }));
     }
   };
 
   const removeFromArrayFilter = (key: keyof ReportFilters, value: number) => {
     const currentArray = (formData.filters[key] as number[]) || [];
-    handleFilterChange(key, currentArray.filter(item => item !== value));
+    setFormData(prev => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: currentArray.filter(item => item !== value)
+      }
+    }));
   };
 
   if (!isOpen) return null;

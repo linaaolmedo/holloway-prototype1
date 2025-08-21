@@ -20,7 +20,7 @@ export default function NotificationDropdown() {
       fetchNotifications();
       fetchUnreadCount();
     }
-  }, [profile]);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -252,7 +252,7 @@ export default function NotificationDropdown() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16a6 6 0 006-6c0-7-6-7-6-7s-6 0-6 7a6 6 0 006 6zM8 17.5c0 .5-.5 2.5-2 2.5h4c-1.5 0-2-2-2.5z" />
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-300">No notifications</h3>
-                <p className="mt-1 text-sm text-gray-400">You're all caught up!</p>
+                <p className="mt-1 text-sm text-gray-400">You&apos;re all caught up!</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-700">

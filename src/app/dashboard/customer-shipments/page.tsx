@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CustomerPortalService } from '@/services/customerPortalService';
 import { LoadWithDetails, LoadFilters } from '@/types/loads';
@@ -13,13 +13,7 @@ export default function CustomerShipmentsPage() {
   const [filters, setFilters] = useState<LoadFilters>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (profile?.customer_id) {
-      fetchShipments();
-    }
-  }, [profile, filters]);
-
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     if (!profile?.customer_id) return;
 
     try {
@@ -31,9 +25,15 @@ export default function CustomerShipmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.customer_id, filters]);
 
-  const handleFilterChange = (key: keyof LoadFilters, value: any) => {
+  useEffect(() => {
+    if (profile?.customer_id) {
+      fetchShipments();
+    }
+  }, [profile?.customer_id, fetchShipments]);
+
+  const handleFilterChange = (key: keyof LoadFilters, value: string | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value === '' ? undefined : value
@@ -79,7 +79,7 @@ export default function CustomerShipmentsPage() {
     });
   };
 
-  const getLocationDisplay = (location: any) => {
+  const getLocationDisplay = (location: { location_name?: string | null; city?: string | null; state?: string | null } | null | undefined) => {
     if (!location) return 'Unknown';
     const parts = [location.location_name, location.city, location.state].filter(Boolean);
     return parts.join(', ') || 'Unknown Location';

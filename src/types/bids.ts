@@ -1,4 +1,4 @@
-import { Load, LoadWithDetails, Carrier } from './loads';
+import { LoadWithDetails, Carrier } from './loads';
 
 export interface Bid {
   id: number;

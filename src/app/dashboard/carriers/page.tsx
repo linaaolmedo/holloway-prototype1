@@ -35,12 +35,12 @@ export default function CarriersPage() {
   useEffect(() => {
     loadCarriers();
     loadEquipmentTypes();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Apply filters when carriers or filters change
   useEffect(() => {
     applyFilters();
-  }, [carriers, filters]);
+  }, [carriers, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -291,7 +291,7 @@ export default function CarriersPage() {
 
       {/* Form Modal */}
       <CarrierFormModal
-        carrier={selectedCarrier}
+        carrier={selectedCarrier || undefined}
         isOpen={isFormModalOpen}
         onClose={handleCloseModals}
         onSubmit={handleFormSubmit}

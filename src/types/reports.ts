@@ -28,7 +28,7 @@ export interface ReportFilters {
   customer_ids?: number[];
   carrier_ids?: number[];
   equipment_type_ids?: number[];
-  custom_filters?: Record<string, any>;
+  custom_filters?: Record<string, unknown>;
 }
 
 export interface CreateReportData {
@@ -59,7 +59,7 @@ export interface ReportGenerationRequest {
   name: string;
 }
 
-export interface LoadReportData {
+export interface LoadReportData extends Record<string, unknown> {
   id: number;
   load_number: string;
   customer_name: string;
@@ -85,7 +85,7 @@ export interface LoadReportData {
   created_at: string;
 }
 
-export interface CarrierReportData {
+export interface CarrierReportData extends Record<string, unknown> {
   id: number;
   name: string;
   mc_number: string;
@@ -103,7 +103,7 @@ export interface CarrierReportData {
   created_at: string;
 }
 
-export interface FleetReportData {
+export interface FleetReportData extends Record<string, unknown> {
   id: number;
   type: 'truck' | 'trailer' | 'driver';
   identifier: string; // truck_number, trailer_number, or driver name
@@ -119,7 +119,7 @@ export interface FleetReportData {
   created_at: string;
 }
 
-export interface CustomerReportData {
+export interface CustomerReportData extends Record<string, unknown> {
   id: number;
   name: string;
   contact_name: string;

@@ -2,6 +2,7 @@ import { LoadWithDetails } from './loads';
 
 export interface DriverAssignment extends LoadWithDetails {
   // Additional fields that might be useful for driver view
+  driver_notes?: string;
 }
 
 export interface LoadMessage {

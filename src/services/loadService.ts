@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import { 
-  Load, 
   LoadWithDetails, 
   CreateLoadData, 
   UpdateLoadData, 
   LoadFilters,
+  LoadStatus,
   Customer,
   CustomerLocation,
   Carrier,
@@ -349,7 +349,7 @@ export class LoadService {
 
   // Get loads available for bidding (unassigned loads)
   static async getAvailableLoadsForBidding(): Promise<LoadWithDetails[]> {
-    let query = supabase
+    const query = supabase
       .from('loads')
       .select(`
         *,
@@ -373,7 +373,7 @@ export class LoadService {
 
   // Update load status (useful for carriers updating their assigned loads)
   static async updateLoadStatus(id: number, status: string): Promise<LoadWithDetails> {
-    return this.updateLoad(id, { status: status as any });
+    return this.updateLoad(id, { status: status as LoadStatus });
   }
 
   // Mark POD as uploaded
@@ -388,7 +388,7 @@ export class LoadService {
 
   // Remove carrier assignment from load
   static async unassignCarrierFromLoad(loadId: number): Promise<LoadWithDetails> {
-    return this.updateLoad(loadId, { carrier_id: null });
+    return this.updateLoad(loadId, { carrier_id: undefined });
   }
 
   // Assign internal fleet to load (driver + truck + trailer)
@@ -496,10 +496,10 @@ export class LoadService {
     }
 
     return this.updateLoad(loadId, {
-      carrier_id: null,
-      driver_id: null,
-      truck_id: null,
-      trailer_id: null,
+      carrier_id: undefined,
+      driver_id: undefined,
+      truck_id: undefined,
+      trailer_id: undefined,
       status: 'Pending Pickup'
     });
   }

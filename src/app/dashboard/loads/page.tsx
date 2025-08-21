@@ -40,7 +40,7 @@ export default function LoadsPage() {
   useEffect(() => {
     loadLoads();
     loadSupportingData();
-  }, [filters]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadLoads = async () => {
     try {
@@ -97,10 +97,10 @@ export default function LoadsPage() {
   };
 
   // CRUD operations
-  const handleCreateLoad = async (data: CreateLoadData) => {
+  const handleCreateLoad = async (data: CreateLoadData | UpdateLoadData) => {
     try {
       setModalLoading(true);
-      await LoadService.createLoad(data);
+      await LoadService.createLoad(data as CreateLoadData);
       setShowCreateModal(false);
       loadLoads();
     } catch (err) {
@@ -276,7 +276,7 @@ export default function LoadsPage() {
       />
 
       <LoadFormModal
-        load={selectedLoad}
+        load={selectedLoad || undefined}
         isOpen={showEditModal}
         onClose={() => {
           setShowEditModal(false);
@@ -302,7 +302,7 @@ export default function LoadsPage() {
         }}
         onConfirm={selectedLoad ? handleDeleteLoad : handleBulkDelete}
         loading={modalLoading}
-        load={selectedLoad}
+        load={selectedLoad || undefined}
         loadCount={selectedLoads.length}
       />
     </div>

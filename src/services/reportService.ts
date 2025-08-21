@@ -225,16 +225,16 @@ export class ReportService {
 
     return (data || []).map(carrier => {
       const loads = carrier.loads || [];
-      const activeLoads = loads.filter(load => ['Pending Pickup', 'In Transit'].includes(load.status));
-      const totalRevenue = loads.reduce((sum, load) => sum + (load.rate_carrier || 0), 0);
+      const activeLoads = loads.filter((load: { status: string }) => ['Pending Pickup', 'In Transit'].includes(load.status));
+      const totalRevenue = loads.reduce((sum: number, load: { rate_carrier?: number }) => sum + (load.rate_carrier || 0), 0);
       const averageRate = loads.length > 0 ? totalRevenue / loads.length : 0;
       
       // Calculate on-time percentage (simplified)
-      const deliveredLoads = loads.filter(load => load.status === 'Delivered' && load.delivery_date);
+      const deliveredLoads = loads.filter((load: { status: string; delivery_date?: string | null }) => load.status === 'Delivered' && load.delivery_date);
       const onTimeCount = deliveredLoads.length; // Simplified - would need actual delivery vs scheduled comparison
       const onTimePercentage = deliveredLoads.length > 0 ? (onTimeCount / deliveredLoads.length * 100) : 0;
 
-      const equipmentTypes = carrier.carrier_equipment_types?.map(cet => cet.equipment_type?.name).filter(Boolean) || [];
+      const equipmentTypes = carrier.carrier_equipment_types?.map((cet: { equipment_type?: { name?: string } }) => cet.equipment_type?.name).filter(Boolean) || [];
 
       return {
         id: carrier.id,
@@ -257,7 +257,7 @@ export class ReportService {
   }
 
   // Generate fleet report data
-  static async generateFleetReportData(filters: ReportFilters): Promise<FleetReportData[]> {
+  static async generateFleetReportData(_filters: ReportFilters): Promise<FleetReportData[]> {
     const reportData: FleetReportData[] = [];
 
     // Get trucks data
@@ -275,8 +275,8 @@ export class ReportService {
 
     trucks?.forEach(truck => {
       const loads = truck.loads || [];
-      const currentLoad = loads.find(load => ['Pending Pickup', 'In Transit'].includes(load.status));
-      const revenueGenerated = loads.reduce((sum, load) => sum + (load.rate_customer || 0), 0);
+      const currentLoad = loads.find((load: { status: string }) => ['Pending Pickup', 'In Transit'].includes(load.status));
+      const revenueGenerated = loads.reduce((sum: number, load: { rate_customer?: number }) => sum + (load.rate_customer || 0), 0);
 
       reportData.push({
         id: truck.id,
@@ -286,7 +286,7 @@ export class ReportService {
         equipment_type: '',
         status: truck.status,
         current_load_id: currentLoad?.id || 0,
-        utilization_rate: loads.length > 0 ? (loads.filter(load => load.status === 'Delivered').length / loads.length * 100) : 0,
+        utilization_rate: loads.length > 0 ? (loads.filter((load: { status: string }) => load.status === 'Delivered').length / loads.length * 100) : 0,
         maintenance_due: truck.maintenance_due || '',
         total_miles: 0, // Would need additional tracking
         revenue_generated: revenueGenerated,
@@ -310,8 +310,8 @@ export class ReportService {
 
     trailers?.forEach(trailer => {
       const loads = trailer.loads || [];
-      const currentLoad = loads.find(load => ['Pending Pickup', 'In Transit'].includes(load.status));
-      const revenueGenerated = loads.reduce((sum, load) => sum + (load.rate_customer || 0), 0);
+      const currentLoad = loads.find((load: { status: string }) => ['Pending Pickup', 'In Transit'].includes(load.status));
+      const revenueGenerated = loads.reduce((sum: number, load: { rate_customer?: number }) => sum + (load.rate_customer || 0), 0);
 
       reportData.push({
         id: trailer.id,
@@ -321,7 +321,7 @@ export class ReportService {
         equipment_type: trailer.equipment_type?.name || '',
         status: trailer.status,
         current_load_id: currentLoad?.id || 0,
-        utilization_rate: loads.length > 0 ? (loads.filter(load => load.status === 'Delivered').length / loads.length * 100) : 0,
+        utilization_rate: loads.length > 0 ? (loads.filter((load: { status: string }) => load.status === 'Delivered').length / loads.length * 100) : 0,
         maintenance_due: trailer.maintenance_due || '',
         total_miles: 0, // Would need additional tracking
         revenue_generated: revenueGenerated,
@@ -345,8 +345,8 @@ export class ReportService {
 
     drivers?.forEach(driver => {
       const loads = driver.loads || [];
-      const currentLoad = loads.find(load => ['Pending Pickup', 'In Transit'].includes(load.status));
-      const revenueGenerated = loads.reduce((sum, load) => sum + (load.rate_customer || 0), 0);
+      const currentLoad = loads.find((load: { status: string }) => ['Pending Pickup', 'In Transit'].includes(load.status));
+      const revenueGenerated = loads.reduce((sum: number, load: { rate_customer?: number }) => sum + (load.rate_customer || 0), 0);
 
       reportData.push({
         id: driver.id,
@@ -356,7 +356,7 @@ export class ReportService {
         equipment_type: '',
         status: driver.status,
         current_load_id: currentLoad?.id || 0,
-        utilization_rate: loads.length > 0 ? (loads.filter(load => load.status === 'Delivered').length / loads.length * 100) : 0,
+        utilization_rate: loads.length > 0 ? (loads.filter((load: { status: string }) => load.status === 'Delivered').length / loads.length * 100) : 0,
         maintenance_due: driver.medical_card_expiry || '',
         total_miles: 0, // Would need additional tracking
         revenue_generated: revenueGenerated,
@@ -392,15 +392,15 @@ export class ReportService {
     return (data || []).map(customer => {
       const loads = customer.loads || [];
       const invoices = customer.invoices || [];
-      const activeLoads = loads.filter(load => ['Pending Pickup', 'In Transit'].includes(load.status));
-      const totalRevenue = loads.reduce((sum, load) => sum + (load.rate_customer || 0), 0);
+      const activeLoads = loads.filter((load: { status: string }) => ['Pending Pickup', 'In Transit'].includes(load.status));
+      const totalRevenue = loads.reduce((sum: number, load: { rate_customer?: number }) => sum + (load.rate_customer || 0), 0);
       const averageRate = loads.length > 0 ? totalRevenue / loads.length : 0;
       
-      const outstandingInvoices = invoices.filter(inv => !inv.is_paid);
-      const outstandingAmount = outstandingInvoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+      const outstandingInvoices = invoices.filter((inv: { is_paid?: boolean }) => !inv.is_paid);
+      const outstandingAmount = outstandingInvoices.reduce((sum: number, inv: { total_amount?: number }) => sum + (inv.total_amount || 0), 0);
       
       // Simplified payment history score
-      const paidInvoices = invoices.filter(inv => inv.is_paid);
+      const paidInvoices = invoices.filter((inv: { is_paid?: boolean }) => inv.is_paid);
       const paymentHistoryScore = invoices.length > 0 ? (paidInvoices.length / invoices.length * 100) : 100;
 
       return {
@@ -425,7 +425,7 @@ export class ReportService {
   }
 
   // Convert data to CSV format
-  static dataToCSV(data: any[], headers: string[]): string {
+  static dataToCSV(data: Record<string, unknown>[], headers: string[]): string {
     const csvHeaders = headers.join(',');
     const csvRows = data.map(row => 
       headers.map(header => {
@@ -443,7 +443,7 @@ export class ReportService {
 
   // Upload report file to Supabase storage
   static async uploadReportFile(fileName: string, content: string, contentType: string): Promise<string> {
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('reports')
       .upload(fileName, content, {
         contentType,
@@ -488,7 +488,7 @@ export class ReportService {
 
       await this.updateReport(report.id, { status: 'generating' });
 
-      let data: any[] = [];
+      let data: Record<string, unknown>[] = [];
       let headers: string[] = [];
 
       // Generate data based on report type

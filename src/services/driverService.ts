@@ -89,7 +89,7 @@ export class DriverService {
   // Send a message about a load
   static async sendMessage(messageData: SendMessageData, userId: string): Promise<LoadMessage> {
     // First, let's gather debugging info if we encounter an RLS error
-    let debugInfo: any = {};
+    const debugInfo: Record<string, unknown> = {};
     
     try {
       // Get current user info for debugging
@@ -154,16 +154,16 @@ export class DriverService {
         
         let enhancedErrorMessage = `RLS Policy Violation - Cannot send message. `;
         
-        if (debugInfo.user?.role !== 'Driver') {
-          enhancedErrorMessage += `User role is '${debugInfo.user?.role}', expected 'Driver'. `;
+        if ((debugInfo.user as { role?: string })?.role !== 'Driver') {
+          enhancedErrorMessage += `User role is '${(debugInfo.user as { role?: string })?.role}', expected 'Driver'. `;
         }
         
         if (!debugInfo.driver) {
           enhancedErrorMessage += `No driver record found for user. `;
         }
         
-        if (debugInfo.load && debugInfo.driver && debugInfo.load.driver_id !== debugInfo.driver.id) {
-          enhancedErrorMessage += `Load is assigned to driver ID ${debugInfo.load.driver_id}, but user is driver ID ${debugInfo.driver.id}. `;
+        if (debugInfo.load && debugInfo.driver && (debugInfo.load as { driver_id?: number }).driver_id !== (debugInfo.driver as { id?: number }).id) {
+          enhancedErrorMessage += `Load is assigned to driver ID ${(debugInfo.load as { driver_id?: number }).driver_id}, but user is driver ID ${(debugInfo.driver as { id?: number }).id}. `;
         }
         
         if (!debugInfo.load) {
@@ -309,7 +309,7 @@ export class DriverService {
         load_id: loadData.id,
         driver_name: loadData.driver?.name || 'Unknown Driver',
         customer_name: loadData.customer?.name,
-        commodity: loadData.commodity,
+        commodity: loadData.commodity || undefined,
         destination: destinationLocation,
         delivery_time: new Date().toISOString()
       });
@@ -348,7 +348,7 @@ export class DriverService {
         load_id: loadId,
         driver_name: driverName,
         message: message,
-        customer_name: loadData.customer?.name,
+        customer_name: Array.isArray(loadData.customer) ? (loadData.customer[0] as { name?: string })?.name : (loadData.customer as { name?: string })?.name,
         commodity: loadData.commodity
       });
     } catch (error) {

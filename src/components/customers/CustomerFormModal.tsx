@@ -46,7 +46,7 @@ export default function CustomerFormModal({
         primary_contact_name: customer.primary_contact_name || '',
         primary_contact_email: customer.primary_contact_email || '',
         primary_contact_phone: customer.primary_contact_phone || '',
-        credit_limit: customer.credit_limit,
+        credit_limit: customer.credit_limit ?? undefined,
         payment_terms: customer.payment_terms || 30,
         consolidated_invoicing: customer.consolidated_invoicing,
       });

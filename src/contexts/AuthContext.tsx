@@ -23,11 +23,11 @@ export interface AuthContextType {
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ user: SupabaseUser | null; error: any }>;
+  signIn: (email: string, password: string) => Promise<{ user: SupabaseUser | null; error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
-  updatePassword: (password: string) => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (password: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sign in function
   const signIn = async (email: string, password: string) => {
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { user: data.user, error: null };
     } catch (error) {
-      return { user: null, error };
+      return { user: null, error: error instanceof Error ? error : new Error(String(error)) };
     }
   };
 
@@ -243,10 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Handle specific error cases
         if (error.message?.includes('User not found') || error.message?.includes('Invalid email')) {
           return { 
-            error: { 
-              message: 'No account found with this email address.',
-              code: 'user_not_found'
-            }
+            error: new Error('No account found with this email address.')
           };
         }
         
@@ -257,18 +254,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: null };
     } catch (error) {
       console.error('Unexpected error in resetPassword:', error);
-      return { error };
+      return { error: error instanceof Error ? error : new Error(String(error)) };
     }
   };
 
   // Update password function
   const updatePassword = async (password: string) => {
-    return new Promise<{ error: any }>((resolve) => {
+    return new Promise<{ error: Error | null }>((resolve) => {
       let resolved = false;
       
       // Set up a listener for auth state changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event, _session) => {
           if (resolved) return;
           
           if (event === 'USER_UPDATED') {
@@ -288,10 +285,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           resolved = true;
           subscription.unsubscribe();
           resolve({ 
-            error: { 
-              message: 'Your new password must be different from your current password. Please choose a different password.',
-              code: 'same_password'
-            }
+            error: new Error('Your new password must be different from your current password. Please choose a different password.')
           });
           return;
         }
@@ -300,10 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           resolved = true;
           subscription.unsubscribe();
           resolve({ 
-            error: { 
-              message: 'Password must be at least 6 characters long.',
-              code: 'password_too_short'
-            }
+            error: new Error('Password must be at least 6 characters long.')
           });
           return;
         }
@@ -312,10 +303,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           resolved = true;
           subscription.unsubscribe();
           resolve({ 
-            error: { 
-              message: 'Password is too weak. Please choose a stronger password with a mix of letters, numbers, and symbols.',
-              code: 'weak_password'
-            }
+            error: new Error('Password is too weak. Please choose a stronger password with a mix of letters, numbers, and symbols.')
           });
           return;
         }
@@ -323,7 +311,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // For other errors, still resolve as error
         resolved = true;
         subscription.unsubscribe();
-        resolve({ error });
+        resolve({ error: error instanceof Error ? error : new Error(String(error)) });
       });
       
       // Set a timeout to prevent hanging forever
@@ -332,10 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           resolved = true;
           subscription.unsubscribe();
           resolve({ 
-            error: { 
-              message: 'Password update timed out. Please try again.',
-              code: 'timeout'
-            }
+            error: new Error('Password update timed out. Please try again.')
           });
         }
       }, 8000);

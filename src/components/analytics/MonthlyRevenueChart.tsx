@@ -18,7 +18,7 @@ export default function MonthlyRevenueChart({ data, loading = false }: MonthlyRe
     }).format(value);
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; payload: { loads: number } }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
@@ -29,7 +29,7 @@ export default function MonthlyRevenueChart({ data, loading = false }: MonthlyRe
           </p>
           <p className="text-gray-500 text-sm">
             <span className="font-semibold">Loads: </span>
-            {payload[0].payload.load_count}
+            {payload[0].payload.loads}
           </p>
         </div>
       );

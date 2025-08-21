@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { 
-  Invoice,
   InvoiceWithDetails,
   LoadReadyForInvoice,
   CreateInvoiceData,
@@ -99,10 +98,13 @@ export class BillingService {
       throw new Error(`Failed to fetch loads ready for invoice: ${error.message}`);
     }
 
-    // Calculate days since delivery for each load
+    // Calculate days since delivery for each load and fix array types
     const now = new Date();
     return (data || []).map(load => ({
       ...load,
+      customer: Array.isArray(load.customer) ? load.customer[0] : load.customer,
+      origin_location: Array.isArray(load.origin_location) ? load.origin_location[0] : load.origin_location,
+      destination_location: Array.isArray(load.destination_location) ? load.destination_location[0] : load.destination_location,
       days_since_delivery: load.delivery_date 
         ? Math.floor((now.getTime() - new Date(load.delivery_date).getTime()) / (1000 * 60 * 60 * 24))
         : 0
@@ -133,7 +135,7 @@ export class BillingService {
 
   // Create a new invoice from selected loads
   static async createInvoice(invoiceData: CreateInvoiceData): Promise<InvoiceWithDetails> {
-    const { load_ids, customer_id, due_date, notes } = invoiceData;
+    const { load_ids, customer_id, due_date } = invoiceData;
 
     // Calculate total amount from selected loads
     const { data: loads, error: loadsError } = await supabase
@@ -229,7 +231,7 @@ export class BillingService {
 
   // Update an existing invoice
   static async updateInvoice(id: number, invoiceData: UpdateInvoiceData): Promise<InvoiceWithDetails> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('invoices')
       .update({
         ...invoiceData,
@@ -330,7 +332,7 @@ export class BillingService {
 
   // Helper: Generate invoice number
   private static async generateInvoiceNumber(): Promise<string> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('invoices')
       .select('invoice_number')
       .order('created_at', { ascending: false })

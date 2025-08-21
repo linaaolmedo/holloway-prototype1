@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const { profile, user } = useAuth();
   const router = useRouter();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [recentLoads, setRecentLoads] = useState<any[]>([]);
+  const [recentLoads, setRecentLoads] = useState<Array<{ id: string; status: string; destination: string; puDate: string; delDate: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -56,7 +56,7 @@ export default function DashboardPage() {
     if (user) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function DashboardPage() {
         intervalRef.current = null;
       }
     };
-  }, [autoRefresh, user]);
+  }, [autoRefresh, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for analytics refresh events (triggered when load status changes)
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('analytics-refresh', handleAnalyticsRefresh);
     };
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh when window becomes visible (user switches back to tab)
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function DashboardPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [autoRefresh, user]);
+  }, [autoRefresh, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clean up intervals when user logs out
   useEffect(() => {

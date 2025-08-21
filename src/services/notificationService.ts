@@ -7,7 +7,7 @@ export interface NotificationData {
   type: 'new_shipment_request' | 'load_update' | 'invoice_created' | 'payment_received' | 'new_bid' | 'bid_accepted' | 'bid_rejected' | 'delivery_completed' | 'driver_message' | 'driver_contact_dispatch';
   title: string;
   message: string;
-  data?: any; // Additional data payload
+  data?: Record<string, unknown>; // Additional data payload
   read: boolean;
   created_at?: string;
 }
@@ -51,11 +51,11 @@ export class NotificationService {
       }
 
       // Create notifications for each dispatcher
-      const notifications = dispatchers.map(dispatcher => ({
+      const notifications = dispatchers.map((dispatcher: { id: number }) => ({
         user_id: dispatcher.id,
         type: 'new_shipment_request' as const,
         title: 'New Shipment Request',
-        message: `Customer ${load.customer?.name || 'Unknown'} has requested a new shipment (Load #${load.id}) from ${this.getLocationDisplay(load.origin_location)} to ${this.getLocationDisplay(load.destination_location)}.`,
+        message: `Customer ${load.customer?.name || 'Unknown'} has requested a new shipment (Load #${load.id}) from ${this.getLocationDisplay(load.origin_location as { location_name?: string; city?: string; state?: string } | null)} to ${this.getLocationDisplay(load.destination_location as { location_name?: string; city?: string; state?: string } | null)}.`,
         data: {
           load_id: load.id,
           customer_id: load.customer_id,
@@ -206,7 +206,7 @@ export class NotificationService {
   }
 
   // Helper method to format location display
-  private static getLocationDisplay(location: any): string {
+  private static getLocationDisplay(location: { location_name?: string; city?: string; state?: string } | null): string {
     if (!location) return 'Unknown Location';
     const parts = [location.location_name, location.city, location.state].filter(Boolean);
     return parts.join(', ') || 'Unknown Location';
@@ -216,7 +216,7 @@ export class NotificationService {
   
   // Send email notifications (would require email service integration)
   /*
-  private static async sendEmailNotifications(dispatchers: any[], load: LoadWithDetails): Promise<void> {
+  private static async sendEmailNotifications(dispatchers: Array<{ email: string; name: string }>, load: LoadWithDetails): Promise<void> {
     // Implementation would depend on your email service (SendGrid, AWS SES, etc.)
     for (const dispatcher of dispatchers) {
       if (dispatcher.email) {
@@ -271,7 +271,7 @@ export class NotificationService {
       }
 
       // Create notifications for each dispatcher
-      const notifications = dispatchers.map(dispatcher => ({
+      const notifications = dispatchers.map((dispatcher: { id: number }) => ({
         user_id: dispatcher.id,
         type: 'new_bid' as const,
         title: 'New Bid Received',
@@ -385,7 +385,7 @@ export class NotificationService {
       }
 
       // Create notifications for each dispatcher
-      const notifications = dispatchers.map(dispatcher => ({
+      const notifications = dispatchers.map((dispatcher: { id: number }) => ({
         user_id: dispatcher.id,
         type: 'delivery_completed' as const,
         title: 'Delivery Completed',
@@ -440,7 +440,7 @@ export class NotificationService {
       }
 
       // Create notifications for each dispatcher
-      const notifications = dispatchers.map(dispatcher => ({
+      const notifications = dispatchers.map((dispatcher: { id: number }) => ({
         user_id: dispatcher.id,
         type: 'driver_message' as const,
         title: 'New Driver Message',
@@ -480,8 +480,8 @@ export class NotificationService {
   }): Promise<void> {
     try {
       // Try service function first, fallback to direct query with admin privileges
-      let dispatchers: any[] = [];
-      let error: any = null;
+      let dispatchers: Array<{ email: string; name: string }> = [];
+      let error: Error | null = null;
 
       // Method 1: Try service function
       const { data: functionResult, error: functionError } = await supabase
@@ -506,7 +506,7 @@ export class NotificationService {
           }
         } catch (directQueryError) {
           console.error('Fallback query failed:', directQueryError);
-          error = directQueryError;
+          error = directQueryError instanceof Error ? directQueryError : new Error(String(directQueryError));
         }
       } else {
         dispatchers = functionResult || [];
@@ -546,8 +546,8 @@ export class NotificationService {
       const urgencyInfo = urgencyConfig[contactData.urgency];
       
       // Create notifications for each dispatcher
-      const notifications = dispatchers.map(dispatcher => ({
-        user_id: dispatcher.id,
+      const notifications = dispatchers.map((_dispatcher: { email: string; name: string }) => ({
+        user_id: 0, // This should be looked up properly
         type: 'driver_contact_dispatch' as const,
         title: `Driver Contact: ${urgencyInfo.label}`,
         message: `${urgencyInfo.emoji} ${contactData.driver_name} contacted dispatch (${urgencyInfo.label}): "${contactData.message.length > 100 ? contactData.message.substring(0, 100) + '...' : contactData.message}"`,

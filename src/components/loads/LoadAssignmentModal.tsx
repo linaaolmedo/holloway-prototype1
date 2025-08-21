@@ -33,7 +33,7 @@ export default function LoadAssignmentModal({
   trucks,
   trailers,
   carriers,
-  equipmentTypeId,
+  // equipmentTypeId,
   loading = false
 }: LoadAssignmentModalProps) {
   const [assignmentType, setAssignmentType] = useState<'carrier' | 'internal'>('internal');

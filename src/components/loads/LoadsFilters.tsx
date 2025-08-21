@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LoadFilters, LoadStatus, Customer, EquipmentType } from '@/types/loads';
 
 interface LoadsFiltersProps {
@@ -15,7 +15,7 @@ export default function LoadsFilters({ filters, onFiltersChange, customers, equi
 
   const statusOptions: LoadStatus[] = ['Pending Pickup', 'In Transit', 'Delivered', 'Cancelled'];
 
-  const updateFilter = (key: keyof LoadFilters, value: any) => {
+  const updateFilter = (key: keyof LoadFilters, value: string | number | undefined) => {
     onFiltersChange({
       ...filters,
       [key]: value || undefined

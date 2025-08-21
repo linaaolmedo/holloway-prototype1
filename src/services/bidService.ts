@@ -6,8 +6,7 @@ import {
   UpdateBidData, 
   BidFilters, 
   AvailableLoad,
-  BidStats,
-  BidNotification
+  BidStats
 } from '@/types/bids';
 import { NotificationService } from './notificationService';
 
@@ -139,7 +138,7 @@ export class BidService {
 
   // Get available loads for carrier load board
   static async getAvailableLoads(carrierId?: number): Promise<AvailableLoad[]> {
-    let query = supabase
+    const query = supabase
       .from('loads')
       .select(`
         *,
@@ -204,7 +203,7 @@ export class BidService {
       }
       acc[bid.load_id].push(bid);
       return acc;
-    }, {} as Record<number, any[]>);
+    }, {} as Record<number, Array<{ load_id: number; carrier_id: number; offered_rate: number | null }>>);
 
     return loads.map(load => {
       const loadBids = bidsByLoad[load.id] || [];
@@ -274,11 +273,11 @@ export class BidService {
           carrier_name: carrierResult.data.name,
           offered_rate: bidData.offered_rate,
           load_commodity: loadResult.data.commodity,
-          load_origin: loadResult.data.origin_location ? 
-            `${loadResult.data.origin_location.city}, ${loadResult.data.origin_location.state}` : 
+                    load_origin: loadResult.data.origin_location ?
+            `${(loadResult.data.origin_location as { city?: string; state?: string }).city}, ${(loadResult.data.origin_location as { city?: string; state?: string }).state}` :
             undefined,
           load_destination: loadResult.data.destination_location ? 
-            `${loadResult.data.destination_location.city}, ${loadResult.data.destination_location.state}` : 
+            `${(loadResult.data.destination_location as { city?: string; state?: string }).city}, ${(loadResult.data.destination_location as { city?: string; state?: string }).state}` : 
             undefined
         });
       }

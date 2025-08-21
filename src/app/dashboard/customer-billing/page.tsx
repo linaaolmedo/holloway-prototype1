@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CustomerPortalService } from '@/services/customerPortalService';
 import { InvoiceWithDetails, BillingFilters } from '@/types/billing';
@@ -14,13 +14,7 @@ export default function CustomerBillingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'outstanding' | 'paid'>('all');
 
-  useEffect(() => {
-    if (profile?.customer_id) {
-      fetchInvoices();
-    }
-  }, [profile, filters]);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     if (!profile?.customer_id) return;
 
     try {
@@ -32,7 +26,13 @@ export default function CustomerBillingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.customer_id, filters]);
+
+  useEffect(() => {
+    if (profile?.customer_id) {
+      fetchInvoices();
+    }
+  }, [profile?.customer_id, fetchInvoices]);
 
   const handleTabChange = (tab: 'all' | 'outstanding' | 'paid') => {
     setActiveTab(tab);
@@ -49,7 +49,7 @@ export default function CustomerBillingPage() {
     setFilters(newFilters);
   };
 
-  const handleFilterChange = (key: keyof BillingFilters, value: any) => {
+  const handleFilterChange = (key: keyof BillingFilters, value: string | boolean | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value === '' ? undefined : value
@@ -306,7 +306,7 @@ export default function CustomerBillingPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => handleTabChange(tab.id as any)}
+                onClick={() => handleTabChange(tab.id as 'all' | 'outstanding' | 'paid')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
                     ? 'border-red-500 text-red-400'

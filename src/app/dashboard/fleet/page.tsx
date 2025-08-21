@@ -27,7 +27,7 @@ import DriversTable from '@/components/fleet/DriversTable';
 import ActiveDispatchTable from '@/components/fleet/ActiveDispatchTable';
 import FleetFormModal from '@/components/fleet/FleetFormModal';
 import DeleteConfirmationModal from '@/components/fleet/DeleteConfirmationModal';
-import FleetFilters from '@/components/fleet/FleetFilters';
+
 
 type TabType = 'trucks' | 'trailers' | 'drivers' | 'active-dispatch';
 
@@ -53,40 +53,41 @@ export default function FleetPage() {
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
     type: 'truck' | 'trailer' | 'driver';
-    entity?: any;
+    entity?: TruckWithDriver | TrailerWithEquipment | DriverWithTruck;
   }>({ isOpen: false, type: 'truck' });
   
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     type: string;
-    entity?: any;
+    entity?: TruckWithDriver | TrailerWithEquipment | DriverWithTruck;
   }>({ isOpen: false, type: '' });
   
   const [formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Load initial data
   useEffect(() => {
     loadAllData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load data when filters change
   useEffect(() => {
     if (activeTab === 'trucks') {
       loadTrucks();
     }
-  }, [truckFilters, activeTab]);
+  }, [truckFilters, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'trailers') {
       loadTrailers();
     }
-  }, [trailerFilters, activeTab]);
+  }, [trailerFilters, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'drivers') {
       loadDrivers();
     }
-  }, [driverFilters, activeTab]);
+  }, [driverFilters, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAllData = async () => {
     setLoading(true);
@@ -165,19 +166,22 @@ export default function FleetPage() {
 
   // Form handlers
   const handleCreateEntity = (type: 'truck' | 'trailer' | 'driver') => {
+    setErrorMessage(null); // Clear any error when opening new form
     setFormModal({ isOpen: true, type, entity: undefined });
   };
 
-  const handleEditEntity = (entity: any, type: 'truck' | 'trailer' | 'driver') => {
+  const handleEditEntity = (entity: TruckWithDriver | TrailerWithEquipment | DriverWithTruck, type: 'truck' | 'trailer' | 'driver') => {
+    setErrorMessage(null); // Clear any error when opening edit form
     setFormModal({ isOpen: true, type, entity });
   };
 
-  const handleDeleteEntity = (entity: any, type: string) => {
+  const handleDeleteEntity = (entity: TruckWithDriver | TrailerWithEquipment | DriverWithTruck, type: string) => {
     setDeleteModal({ isOpen: true, type, entity });
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: CreateTruckData | UpdateTruckData | CreateTrailerData | UpdateTrailerData | CreateDriverData | UpdateDriverData) => {
     setFormLoading(true);
+    setErrorMessage(null); // Clear any previous errors
     try {
       if (formModal.type === 'truck') {
         if (formModal.entity) {
@@ -203,16 +207,18 @@ export default function FleetPage() {
       }
       
       setFormModal({ isOpen: false, type: 'truck' });
+      setErrorMessage(null); // Clear error on successful submission
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert(`Error creating ${formModal.type}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      throw error;
+      setErrorMessage(`Error ${formModal.entity ? 'updating' : 'creating'} ${formModal.type}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Don't throw error to keep form modal open so user can see the error
     } finally {
       setFormLoading(false);
     }
   };
 
   const handleDeleteConfirm = async () => {
+    if (!deleteModal.entity) return;
+    
     setFormLoading(true);
     try {
       if (deleteModal.type === 'truck') {
@@ -234,10 +240,11 @@ export default function FleetPage() {
     }
   };
 
-  const getEntityName = (entity: any, type: string) => {
-    if (type === 'truck') return entity?.truck_number;
-    if (type === 'trailer') return entity?.trailer_number;
-    if (type === 'driver') return entity?.name;
+  const getEntityName = (entity: TruckWithDriver | TrailerWithEquipment | DriverWithTruck | undefined, type: string) => {
+    if (!entity) return '';
+    if (type === 'truck') return (entity as TruckWithDriver).truck_number;
+    if (type === 'trailer') return (entity as TrailerWithEquipment).trailer_number;
+    if (type === 'driver') return (entity as DriverWithTruck).name;
     return '';
   };
 
@@ -297,6 +304,28 @@ export default function FleetPage() {
           ))}
         </nav>
       </div>
+
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-300 text-sm">{errorMessage}</p>
+            </div>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="text-red-400 hover:text-red-300 p-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search Filter */}
       <div className="mb-6">
@@ -377,6 +406,7 @@ export default function FleetPage() {
         equipmentTypes={equipmentTypes}
         availableTrucks={availableTrucks}
         loading={formLoading}
+        errorMessage={errorMessage}
       />
 
       <DeleteConfirmationModal

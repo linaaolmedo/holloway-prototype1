@@ -30,6 +30,7 @@ interface FleetFormModalProps {
   equipmentTypes?: EquipmentType[];
   availableTrucks?: Truck[];
   loading?: boolean;
+  errorMessage?: string | null;
 }
 
 export default function FleetFormModal({
@@ -39,10 +40,11 @@ export default function FleetFormModal({
   entityType,
   entity,
   equipmentTypes = [],
-  availableTrucks = [],
-  loading = false
+  // availableTrucks = [],
+  loading = false,
+  errorMessage = null
 }: FleetFormModalProps) {
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEditing = Boolean(entity);
@@ -59,7 +61,7 @@ export default function FleetFormModal({
         setFormData(entity);
       } else {
         // Initialize with default values based on entity type
-        const defaultData: Record<FleetType, any> = {
+        const defaultData: Record<FleetType, Record<string, unknown>> = {
           truck: {
             truck_number: '',
             license_plate: '',
@@ -94,18 +96,18 @@ export default function FleetFormModal({
     const newErrors: Record<string, string> = {};
     
     if (entityType === 'truck') {
-      if (!formData.truck_number?.trim()) {
+      if (!(formData.truck_number as string)?.trim()) {
         newErrors.truck_number = 'Truck number is required';
       }
     } else if (entityType === 'trailer') {
-      if (!formData.trailer_number?.trim()) {
+      if (!(formData.trailer_number as string)?.trim()) {
         newErrors.trailer_number = 'Trailer number is required';
       }
       if (!formData.equipment_type_id) {
         newErrors.equipment_type_id = 'Equipment type is required';
       }
     } else if (entityType === 'driver') {
-      if (!formData.name?.trim()) {
+      if (!(formData.name as string)?.trim()) {
         newErrors.name = 'Driver name is required';
       }
     }
@@ -118,13 +120,14 @@ export default function FleetFormModal({
     try {
       await onSubmit(formData);
       onClose();
-    } catch (error) {
-      console.error('Form submission error:', error);
+    } catch (_error) {
+      // Error is handled by parent component, no need to log here
+      // Parent component will display the error message in the UI
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({
+  const handleInputChange = (field: string, value: string | number | boolean) => {
+    setFormData((prev: Record<string, unknown>) => ({
       ...prev,
       [field]: value
     }));
@@ -152,7 +155,7 @@ export default function FleetFormModal({
           </label>
         <input
           type="text"
-          value={formData.truck_number || ''}
+          value={(formData.truck_number as string) || ''}
           onChange={(e) => handleInputChange('truck_number', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           placeholder="e.g., H-105"
@@ -168,7 +171,7 @@ export default function FleetFormModal({
         </label>
         <input
           type="text"
-          value={formData.license_plate || ''}
+          value={(formData.license_plate as string) || ''}
           onChange={(e) => handleInputChange('license_plate', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           placeholder="17-digit VIN"
@@ -182,7 +185,7 @@ export default function FleetFormModal({
           </label>
           <input
             type="text"
-            value={formData.make || ''}
+            value={(formData.make as string) || ''}
             onChange={(e) => handleInputChange('make', e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="e.g., Peterbilt"
@@ -194,7 +197,7 @@ export default function FleetFormModal({
           </label>
           <input
             type="text"
-            value={formData.model || ''}
+            value={(formData.model as string) || ''}
             onChange={(e) => handleInputChange('model', e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="e.g., 579"
@@ -206,7 +209,7 @@ export default function FleetFormModal({
           </label>
           <input
             type="text"
-            value={formData.year || ''}
+            value={(formData.year as string) || ''}
             onChange={(e) => handleInputChange('year', e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="2025"
@@ -219,7 +222,7 @@ export default function FleetFormModal({
           Status
         </label>
         <select
-          value={formData.status || 'Available'}
+          value={(formData.status as string) || 'Available'}
           onChange={(e) => handleInputChange('status', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         >
@@ -241,7 +244,7 @@ export default function FleetFormModal({
           </label>
         <input
           type="text"
-          value={formData.trailer_number || ''}
+          value={(formData.trailer_number as string) || ''}
           onChange={(e) => handleInputChange('trailer_number', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           placeholder="e.g., TR-201"
@@ -257,7 +260,7 @@ export default function FleetFormModal({
         </label>
         <input
           type="text"
-          value={formData.license_plate || ''}
+          value={(formData.license_plate as string) || ''}
           onChange={(e) => handleInputChange('license_plate', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           placeholder="17-digit VIN"
@@ -269,7 +272,7 @@ export default function FleetFormModal({
           Trailer Type
         </label>
         <select
-          value={formData.equipment_type_id || ''}
+          value={(formData.equipment_type_id as string) || ''}
           onChange={(e) => handleInputChange('equipment_type_id', parseInt(e.target.value))}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         >
@@ -288,7 +291,7 @@ export default function FleetFormModal({
           Status
         </label>
         <select
-          value={formData.status || 'Available'}
+          value={(formData.status as string) || 'Available'}
           onChange={(e) => handleInputChange('status', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         >
@@ -310,7 +313,7 @@ export default function FleetFormModal({
           </label>
         <input
           type="text"
-          value={formData.name || ''}
+          value={(formData.name as string) || ''}
           onChange={(e) => handleInputChange('name', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           placeholder="e.g., John Doe"
@@ -327,7 +330,7 @@ export default function FleetFormModal({
           </label>
           <input
             type="text"
-            value={formData.license_number || ''}
+            value={(formData.license_number as string) || ''}
             onChange={(e) => handleInputChange('license_number', e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="e.g., D12345678"
@@ -339,7 +342,7 @@ export default function FleetFormModal({
           </label>
           <input
             type="tel"
-            value={formData.phone || ''}
+            value={(formData.phone as string) || ''}
             onChange={(e) => handleInputChange('phone', e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="e.g., 555-123-4567"
@@ -352,7 +355,7 @@ export default function FleetFormModal({
           Status
         </label>
         <select
-          value={formData.status || 'Active'}
+          value={(formData.status as string) || 'Active'}
           onChange={(e) => handleInputChange('status', e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         >
@@ -381,6 +384,20 @@ export default function FleetFormModal({
             </button>
           </div>
         </div>
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="px-6 py-4 border-b border-gray-700">
+            <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-lg p-3">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-red-300 text-sm">{errorMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="px-6 py-4">
           {entityType === 'truck' && renderTruckForm()}

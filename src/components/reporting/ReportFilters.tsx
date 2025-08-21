@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ReportSearchFilters, ReportType, ReportStatus } from '@/types/reports';
 
 interface ReportFiltersProps {
@@ -25,7 +25,7 @@ export default function ReportFilters({ onFiltersChange, loading }: ReportFilter
     { value: 'failed', label: 'Failed' }
   ];
 
-  const handleFilterChange = (key: keyof ReportSearchFilters, value: any) => {
+  const handleFilterChange = (key: keyof ReportSearchFilters, value: string | undefined) => {
     const newFilters = {
       ...filters,
       [key]: value || undefined

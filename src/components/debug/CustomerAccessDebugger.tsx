@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CustomerAccessDebugger() {
   const { user, profile } = useAuth();
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const runDiagnostics = async () => {
+  const runDiagnostics = useCallback(async () => {
     setLoading(true);
     try {
-      const diagnostics: any = {
+      const diagnostics: Record<string, unknown> = {
         authUser: user,
         userProfile: profile,
         timestamp: new Date().toISOString()
@@ -66,7 +66,7 @@ export default function CustomerAccessDebugger() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, profile]);
 
   const fixUserRole = async () => {
     if (!user) return;
@@ -100,7 +100,7 @@ export default function CustomerAccessDebugger() {
     if (user) {
       runDiagnostics();
     }
-  }, [user]);
+  }, [user, runDiagnostics]);
 
   if (!user) {
     return (
@@ -138,10 +138,10 @@ export default function CustomerAccessDebugger() {
             <h4 className="font-medium text-white mb-2">Auth Context</h4>
             <pre className="text-sm text-gray-300 overflow-x-auto">
               {JSON.stringify({
-                userId: debugInfo.authUser?.id,
-                email: debugInfo.authUser?.email,
-                profileRole: debugInfo.userProfile?.role,
-                profileName: debugInfo.userProfile?.name
+                userId: (debugInfo.authUser as { id?: string })?.id,
+                email: (debugInfo.authUser as { email?: string })?.email,
+                profileRole: (debugInfo.userProfile as { role?: string })?.role,
+                profileName: (debugInfo.userProfile as { name?: string })?.name
               }, null, 2)}
             </pre>
           </div>
@@ -174,8 +174,8 @@ export default function CustomerAccessDebugger() {
 
       <div className="mt-4 p-4 bg-yellow-900 border border-yellow-600 rounded">
         <p className="text-sm text-yellow-200">
-          <strong>Issue:</strong> If customers aren't showing, it's likely because the user's role in the database 
-          doesn't match the expected 'Dispatcher' role required by RLS policies.
+          <strong>Issue:</strong> If customers aren&apos;t showing, it&apos;s likely because the user&apos;s role in the database 
+          doesn&apos;t match the expected &apos;Dispatcher&apos; role required by RLS policies.
         </p>
       </div>
     </div>

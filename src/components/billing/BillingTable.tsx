@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { BillingTableProps, LoadReadyForInvoice, InvoiceWithDetails, BillingTab } from '@/types/billing';
+
+import { BillingTableProps, LoadReadyForInvoice, InvoiceWithDetails } from '@/types/billing';
 
 export default function BillingTable({
   activeTab,
@@ -13,8 +13,7 @@ export default function BillingTable({
   onViewInvoice,
   onMarkPaid
 }: BillingTableProps) {
-  const [sortField, setSortField] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -50,14 +49,7 @@ export default function BillingTable({
     return 'text-red-400';
   };
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
+
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {

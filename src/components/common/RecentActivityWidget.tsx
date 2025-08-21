@@ -37,18 +37,18 @@ export default function RecentActivityWidget({
     fetchRecentActivity();
   }, [hours, limit]);
 
-  const getOperationColor = (operation: string) => {
-    switch (operation) {
-      case 'INSERT':
-        return 'text-green-400';
-      case 'UPDATE':
-        return 'text-blue-400';
-      case 'DELETE':
-        return 'text-red-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
+  // const getOperationColor = (operation: string) => {
+  //   switch (operation) {
+  //     case 'INSERT':
+  //       return 'text-green-400';
+  //     case 'UPDATE':
+  //       return 'text-blue-400';
+  //     case 'DELETE':
+  //       return 'text-red-400';
+  //     default:
+  //       return 'text-gray-400';
+  //   }
+  // };
 
   const getOperationBadge = (operation: string) => {
     const baseClasses = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium';

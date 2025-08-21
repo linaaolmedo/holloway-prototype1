@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnalyticsService } from '@/services/analyticsService';
 import { AnalyticsDashboard } from '@/types/analytics';
-import { AnalyticsProvider, useAnalyticsRefresh } from '@/contexts/AnalyticsContext';
+import { AnalyticsProvider } from '@/contexts/AnalyticsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import MonthlyRevenueChart from '@/components/analytics/MonthlyRevenueChart';
 import ShipmentStatusChart from '@/components/analytics/ShipmentStatusChart';
@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
         intervalRef.current = null;
       }
     };
-  }, [autoRefresh, user]);
+  }, [autoRefresh, user, loadAnalytics]);
 
   // Refresh when window becomes visible (user switches back to tab)
   useEffect(() => {
@@ -72,14 +72,14 @@ export default function AnalyticsPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [autoRefresh, user]);
+  }, [autoRefresh, user, loadAnalytics]);
 
   // Initial load
   useEffect(() => {
     if (user) {
       loadAnalytics();
     }
-  }, [user]);
+  }, [user, loadAnalytics]);
 
   // Listen for global analytics refresh events
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
         window.removeEventListener('analytics-refresh', handleGlobalRefresh);
       };
     }
-  }, [autoRefresh, user]);
+  }, [autoRefresh, user, loadAnalytics]);
 
   // Clean up intervals when user logs out
   useEffect(() => {

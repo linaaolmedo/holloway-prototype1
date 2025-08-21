@@ -79,7 +79,7 @@ export default function LoadsTable({
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatAddress = (location: any) => {
+  const formatAddress = (location: { address_line1?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; location_name?: string | null } | null | undefined) => {
     if (!location) return '-';
     const parts = [
       location.city,

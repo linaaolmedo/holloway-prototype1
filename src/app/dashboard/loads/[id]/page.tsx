@@ -31,7 +31,7 @@ export default function LoadDetailsPage() {
       fetchLoadDetails();
       fetchAssignmentResources();
     }
-  }, [loadId]);
+  }, [loadId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLoadDetails = async () => {
     try {
@@ -64,7 +64,7 @@ export default function LoadDetailsPage() {
         license_number: d.license_number,
         license_expiry_date: d.license_expiry_date,
         medical_card_expiry: d.medical_card_expiry,
-        status: d.status,
+        status: d.status as 'Active' | 'On Leave' | 'Inactive',
         truck_id: d.truck_id,
         user_id: d.user_id,
         created_at: d.created_at,
@@ -78,7 +78,7 @@ export default function LoadDetailsPage() {
         truck_number: t.truck_number,
         license_plate: t.license_plate,
         maintenance_due: t.maintenance_due,
-        status: t.status,
+        status: t.status as 'Available' | 'In Use' | 'Maintenance',
         created_at: t.created_at,
         updated_at: t.updated_at,
         created_by: t.created_by,
@@ -91,7 +91,7 @@ export default function LoadDetailsPage() {
         license_plate: t.license_plate,
         equipment_type_id: t.equipment_type_id,
         maintenance_due: t.maintenance_due,
-        status: t.status,
+        status: t.status as 'Available' | 'In Use' | 'Maintenance',
         created_at: t.created_at,
         updated_at: t.updated_at,
         created_by: t.created_by,
@@ -473,8 +473,16 @@ export default function LoadDetailsPage() {
         <LoadFormModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
-          onSave={fetchLoadDetails}
+          onSubmit={fetchLoadDetails}
           load={load}
+          customers={[]}
+          customerLocations={[]}
+          carriers={carriers}
+          equipmentTypes={[]}
+          drivers={drivers}
+          trucks={trucks}
+          trailers={trailers}
+          loading={loading}
         />
       )}
 

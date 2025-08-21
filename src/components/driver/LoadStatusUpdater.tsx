@@ -106,10 +106,10 @@ export default function LoadStatusUpdater({ assignment, onStatusUpdate, loading 
           <h3 className="text-sm font-medium text-gray-400 mb-2">Instructions</h3>
           <div className="text-sm text-gray-300 space-y-1">
             {canMarkInTransit && (
-              <p>• Click "Mark as In Transit" when you have picked up the load and are en route</p>
+              <p>• Click &quot;Mark as In Transit&quot; when you have picked up the load and are en route</p>
             )}
             {canMarkDelivered && (
-              <p>• Click "Mark as Delivered" when you have successfully delivered the load</p>
+              <p>• Click &quot;Mark as Delivered&quot; when you have successfully delivered the load</p>
             )}
             <p>• Status updates are automatically logged and sent to dispatch</p>
           </div>

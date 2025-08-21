@@ -29,7 +29,7 @@ export default function CurrentAssignment({ assignment, loading }: CurrentAssign
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
         <h3 className="text-lg font-medium text-white mb-2">No Current Assignment</h3>
-        <p className="text-gray-400">You don't have any active loads assigned. Contact dispatch for your next assignment.</p>
+        <p className="text-gray-400">You don&apos;t have any active loads assigned. Contact dispatch for your next assignment.</p>
       </div>
     );
   }
@@ -47,7 +47,7 @@ export default function CurrentAssignment({ assignment, loading }: CurrentAssign
     }
   };
 
-  const formatLocation = (location: any) => {
+  const formatLocation = (location: { location_name?: string | null; city?: string | null; state?: string | null } | null | undefined) => {
     if (!location) return 'Unknown Location';
     const parts = [
       location.location_name,

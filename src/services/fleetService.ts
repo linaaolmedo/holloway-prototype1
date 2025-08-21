@@ -89,8 +89,25 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error creating truck:', error);
-      throw new Error('Failed to create truck');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('truck_number')) {
+          throw new Error(`Truck number "${truckData.truck_number}" is already in use. Please choose a different unit number.`);
+        } else if (error.message.includes('license_plate')) {
+          throw new Error(`License plate "${truckData.license_plate}" is already registered to another truck.`);
+        } else {
+          throw new Error('This truck information already exists in the system.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_truck_status')) {
+          throw new Error('Invalid truck status. Please select Available, In Use, or Maintenance.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        throw new Error('Required truck information is missing. Please check that all required fields are filled.');
+      }
+      
+      // Generic error for other cases
+      throw new Error('Failed to create truck. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -103,7 +120,7 @@ export class FleetService {
 
   static async updateTruck(id: number, truckData: UpdateTruckData): Promise<Truck> {
     // Only include fields that exist in the database schema
-    const dbData: any = {};
+    const dbData: Record<string, unknown> = {};
     if (truckData.truck_number !== undefined) dbData.truck_number = truckData.truck_number;
     if (truckData.license_plate !== undefined) dbData.license_plate = truckData.license_plate;
     if (truckData.status !== undefined) dbData.status = truckData.status;
@@ -116,8 +133,25 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error updating truck:', error);
-      throw new Error('Failed to update truck');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('truck_number')) {
+          throw new Error(`Truck number "${truckData.truck_number}" is already in use. Please choose a different unit number.`);
+        } else if (error.message.includes('license_plate')) {
+          throw new Error(`License plate "${truckData.license_plate}" is already registered to another truck.`);
+        } else {
+          throw new Error('This truck information already exists in the system.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_truck_status')) {
+          throw new Error('Invalid truck status. Please select Available, In Use, or Maintenance.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        throw new Error('Required truck information is missing. Please check that all required fields are filled.');
+      }
+      
+      // Generic error for other cases
+      throw new Error('Failed to update truck. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -260,8 +294,27 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error creating trailer:', error);
-      throw new Error('Failed to create trailer');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('trailer_number')) {
+          throw new Error(`Trailer number "${trailerData.trailer_number}" is already in use. Please choose a different unit number.`);
+        } else {
+          throw new Error('This trailer information already exists in the system.');
+        }
+      } else if (error.code === '23503') { // Foreign key constraint violation
+        if (error.message.includes('equipment_type_id')) {
+          throw new Error('Invalid equipment type selected. Please choose a valid equipment type.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_trailer_status')) {
+          throw new Error('Invalid trailer status. Please select Available, In Use, or Maintenance.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        throw new Error('Required trailer information is missing. Please check that all required fields are filled.');
+      }
+      
+      // Generic error for other cases
+      throw new Error('Failed to create trailer. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -274,7 +327,7 @@ export class FleetService {
 
   static async updateTrailer(id: number, trailerData: UpdateTrailerData): Promise<Trailer> {
     // Only include fields that exist in the database schema
-    const dbData: any = {};
+    const dbData: Record<string, unknown> = {};
     if (trailerData.trailer_number !== undefined) dbData.trailer_number = trailerData.trailer_number;
     if (trailerData.license_plate !== undefined) dbData.license_plate = trailerData.license_plate;
     if (trailerData.equipment_type_id !== undefined) dbData.equipment_type_id = trailerData.equipment_type_id;
@@ -288,8 +341,27 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error updating trailer:', error);
-      throw new Error('Failed to update trailer');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('trailer_number')) {
+          throw new Error(`Trailer number "${trailerData.trailer_number}" is already in use. Please choose a different unit number.`);
+        } else {
+          throw new Error('This trailer information already exists in the system.');
+        }
+      } else if (error.code === '23503') { // Foreign key constraint violation
+        if (error.message.includes('equipment_type_id')) {
+          throw new Error('Invalid equipment type selected. Please choose a valid equipment type.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_trailer_status')) {
+          throw new Error('Invalid trailer status. Please select Available, In Use, or Maintenance.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        throw new Error('Required trailer information is missing. Please check that all required fields are filled.');
+      }
+      
+      // Generic error for other cases
+      throw new Error('Failed to update trailer. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -441,11 +513,31 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error creating driver:', error);
-      if (error.message.includes('chk_driver_status')) {
-        throw new Error('Invalid driver status. Must be "Active", "On Leave", or "Inactive"');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('ux_driver_truck')) {
+          throw new Error('This truck is already assigned to another driver. Please choose a different truck or unassign the current driver first.');
+        } else {
+          throw new Error('A driver with this information already exists in the system.');
+        }
+      } else if (error.code === '23503') { // Foreign key constraint violation
+        if (error.message.includes('truck_id')) {
+          throw new Error('Invalid truck selected. Please choose a valid truck or leave unassigned.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_driver_status')) {
+          throw new Error('Invalid driver status. Please select Active, On Leave, or Inactive.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        if (error.message.includes('name')) {
+          throw new Error('Driver name is required. Please enter the driver\'s full name.');
+        } else {
+          throw new Error('Required driver information is missing. Please check that all required fields are filled.');
+        }
       }
-      throw new Error(`Failed to create driver: ${error.message}`);
+      
+      // Generic error for other cases
+      throw new Error('Failed to create driver. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -458,7 +550,7 @@ export class FleetService {
 
   static async updateDriver(id: number, driverData: UpdateDriverData): Promise<Driver> {
     // Only include fields that exist in the database schema
-    const dbData: any = {};
+    const dbData: Record<string, unknown> = {};
     if (driverData.name !== undefined) dbData.name = driverData.name;
     if (driverData.phone !== undefined) dbData.phone = driverData.phone;
     if (driverData.license_number !== undefined) dbData.license_number = driverData.license_number;
@@ -475,8 +567,31 @@ export class FleetService {
       .single();
 
     if (error) {
-      console.error('Error updating driver:', error);
-      throw new Error('Failed to update driver');
+      // Handle specific database constraint violations
+      if (error.code === '23505') { // Unique constraint violation
+        if (error.message.includes('ux_driver_truck')) {
+          throw new Error('This truck is already assigned to another driver. Please choose a different truck or unassign the current driver first.');
+        } else {
+          throw new Error('A driver with this information already exists in the system.');
+        }
+      } else if (error.code === '23503') { // Foreign key constraint violation
+        if (error.message.includes('truck_id')) {
+          throw new Error('Invalid truck selected. Please choose a valid truck or leave unassigned.');
+        }
+      } else if (error.code === '23514') { // Check constraint violation
+        if (error.message.includes('chk_driver_status')) {
+          throw new Error('Invalid driver status. Please select Active, On Leave, or Inactive.');
+        }
+      } else if (error.code === '23502') { // Not null constraint violation
+        if (error.message.includes('name')) {
+          throw new Error('Driver name is required. Please enter the driver\'s full name.');
+        } else {
+          throw new Error('Required driver information is missing. Please check that all required fields are filled.');
+        }
+      }
+      
+      // Generic error for other cases
+      throw new Error('Failed to update driver. Please check your information and try again.');
     }
 
     // Trigger analytics refresh
@@ -602,7 +717,7 @@ export class FleetService {
 
     // For each active driver, get their current loads separately to avoid join conflicts
     const driversWithLoads = await Promise.all(
-      data.map(async (driver: any) => {
+      data.map(async (driver: { id: number; name: string; phone: string | null; status: string; trucks: { id: number; truck_number: string; status: string }[] }) => {
         // Get current loads for this driver
         const { data: loads, error: loadsError } = await supabase
           .from('loads')
@@ -633,15 +748,21 @@ export class FleetService {
           driver_id: driver.id,
           driver_name: driver.name,
           driver_phone: driver.phone,
-          truck: driver.trucks,
+          truck: Array.isArray(driver.trucks) ? driver.trucks[0] as Partial<Truck> : driver.trucks as Partial<Truck>,
           current_load: activeLoad ? {
             load_id: `BF-${activeLoad.id}`,
             status: activeLoad.status,
             commodity: activeLoad.commodity,
             origin: activeLoad.origin_location ? 
-              `${activeLoad.origin_location.city}, ${activeLoad.origin_location.state}` : 'N/A',
+              (Array.isArray(activeLoad.origin_location) 
+                ? `${(activeLoad.origin_location[0] as { city?: string; state?: string })?.city}, ${(activeLoad.origin_location[0] as { city?: string; state?: string })?.state}`
+                : `${(activeLoad.origin_location as { city?: string; state?: string })?.city}, ${(activeLoad.origin_location as { city?: string; state?: string })?.state}`)
+              : 'N/A',
             destination: activeLoad.destination_location ? 
-              `${activeLoad.destination_location.city}, ${activeLoad.destination_location.state}` : 'N/A'
+              (Array.isArray(activeLoad.destination_location)
+                ? `${(activeLoad.destination_location[0] as { city?: string; state?: string })?.city}, ${(activeLoad.destination_location[0] as { city?: string; state?: string })?.state}`
+                : `${(activeLoad.destination_location as { city?: string; state?: string })?.city}, ${(activeLoad.destination_location as { city?: string; state?: string })?.state}`)
+              : 'N/A'
           } : null,
           available_hours: driver.trucks ? `${Math.floor(Math.random() * 8) + 4}h ${Math.floor(Math.random() * 60)}m` : 'N/A',
           status: driver.status
@@ -649,7 +770,7 @@ export class FleetService {
       })
     );
 
-    return driversWithLoads;
+    return driversWithLoads as ActiveDispatch[];
   }
 
   // ==================== UTILITY FUNCTIONS ====================

@@ -90,7 +90,7 @@ export default function CustomersTable({
     return phone;
   };
 
-  const formatLocations = (locations: any[]) => {
+  const formatLocations = (locations: Array<{ city?: string | null; state?: string | null }>) => {
     if (!locations || locations.length === 0) return '-';
     if (locations.length === 1) {
       const loc = locations[0];

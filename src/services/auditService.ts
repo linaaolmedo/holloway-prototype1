@@ -137,14 +137,14 @@ export class AuditService {
     }
 
     // Get most active user (simplified - just get recent activity)
-    const { data: userActivity, error: userError } = await supabase
+    const { data: userActivity, error: _userError } = await supabase
       .from('audit_log_formatted')
       .select('user_display_name')
       .gte('changed_at', weekAgo.toISOString())
       .limit(1);
 
     // Get most changed table (simplified)
-    const { data: tableActivity, error: tableError } = await supabase
+    const { data: tableActivity, error: _tableError } = await supabase
       .from('audit_log_formatted')
       .select('table_display_name')
       .gte('changed_at', weekAgo.toISOString())

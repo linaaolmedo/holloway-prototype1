@@ -125,7 +125,7 @@ export default function AuditHistoryViewer({
   return (
     <div className={className}>
       <div className="space-y-3">
-        {visibleHistory.map((entry, index) => (
+        {visibleHistory.map((entry) => (
           <div key={entry.id} className="flex items-start space-x-3">
             {getOperationIcon(entry.operation)}
             <div className="flex-1 min-w-0">

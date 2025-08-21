@@ -90,7 +90,7 @@ export class DashboardService {
   }
 
   // Get recent active loads for the dashboard
-  static async getRecentActiveLoads(limit: number = 6): Promise<any[]> {
+  static async getRecentActiveLoads(limit: number = 6): Promise<Array<{ id: string; status: string; destination: string; puDate: string; delDate: string }>> {
     try {
       const { data, error } = await supabase
         .from('loads')
@@ -111,7 +111,11 @@ export class DashboardService {
         id: `HC-${load.id.toString().padStart(4, '0')}`,
         puDate: load.pickup_date ? new Date(load.pickup_date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : 'N/A',
         delDate: load.delivery_date ? new Date(load.delivery_date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : 'N/A',
-        destination: load.destination_location ? `${load.destination_location.city}, ${load.destination_location.state}` : 'Unknown',
+        destination: load.destination_location ? 
+          Array.isArray(load.destination_location) 
+            ? `${(load.destination_location[0] as { city?: string; state?: string }).city}, ${(load.destination_location[0] as { city?: string; state?: string }).state}`
+            : `${(load.destination_location as { city?: string; state?: string }).city}, ${(load.destination_location as { city?: string; state?: string }).state}`
+          : 'Unknown',
         status: load.status
       }));
     } catch (error) {

@@ -106,12 +106,12 @@ export default function BillingPage() {
   useEffect(() => {
     loadSummary();
     loadCustomers();
-  }, []);
+  }, [loadSummary, loadCustomers]);
 
   // Reload table data when dependencies change
   useEffect(() => {
     loadTableData();
-  }, [activeTab, filters]);
+  }, [activeTab, filters, loadTableData]);
 
   // Listen for analytics refresh events
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function BillingPage() {
 
     window.addEventListener('analytics-refresh', handleAnalyticsRefresh);
     return () => window.removeEventListener('analytics-refresh', handleAnalyticsRefresh);
-  }, []);
+  }, [loadSummary, loadTableData]);
 
   const handleTabChange = (tabId: 'ready' | 'outstanding' | 'paid') => {
     setActiveTab(tabId);

@@ -36,13 +36,13 @@ export default function ReportingPage() {
 
   useEffect(() => {
     loadReports();
-  }, [filters]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle create report
-  const handleCreate = async (data: CreateReportData) => {
+  const handleCreate = async (data: CreateReportData | UpdateReportData) => {
     try {
       setActionLoading(true);
-      await ReportService.createReport(data);
+      await ReportService.createReport(data as CreateReportData);
       setShowCreateModal(false);
       loadReports();
     } catch (error) {

@@ -83,7 +83,7 @@ export default function CarriersTable({
     return `${states.slice(0, 3).join(', ')} +${states.length - 3} more`;
   };
 
-  const formatEquipmentTypes = (equipmentTypes: any[]) => {
+  const formatEquipmentTypes = (equipmentTypes: Array<{ name: string }>) => {
     if (!equipmentTypes || equipmentTypes.length === 0) return '-';
     if (equipmentTypes.length <= 2) {
       return equipmentTypes.map(et => et.name).join(', ');

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CustomerPortalService, CustomerDashboardStats } from '@/services/customerPortalService';
-import { LoadWithDetails } from '@/types/loads';
-import { InvoiceWithDetails } from '@/types/billing';
+
 import Link from 'next/link';
 
 interface CustomerPortalDashboardProps {
@@ -21,7 +20,7 @@ export default function CustomerPortalDashboard({ onNewShipmentClick }: Customer
     if (profile?.customer_id) {
       fetchDashboardStats();
     }
-  }, [profile]);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboardStats = async () => {
     if (!profile?.customer_id) return;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BillingFilters, Customer } from '@/types/billing';
+import type { BillingFilters, Customer } from '@/types/billing';
 
 interface BillingFiltersProps {
   filters: BillingFilters;
@@ -25,9 +25,9 @@ export default function BillingFilters({
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [localFilters]);
+  }, [localFilters]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleFilterChange = (key: keyof BillingFilters, value: any) => {
+  const handleFilterChange = (key: keyof BillingFilters, value: string | boolean | number | undefined) => {
     setLocalFilters(prev => ({
       ...prev,
       [key]: value === '' ? undefined : value

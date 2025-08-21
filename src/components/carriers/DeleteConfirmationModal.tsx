@@ -74,7 +74,7 @@ export default function DeleteConfirmationModal({
 
               <div className="bg-yellow-900 bg-opacity-20 border border-yellow-600 rounded-lg p-3">
                 <p className="text-yellow-300 text-sm">
-                  <strong>Alternative:</strong> Consider marking this carrier as "Do Not Use" instead of deleting, 
+                  <strong>Alternative:</strong> Consider marking this carrier as &quot;Do Not Use&quot; instead of deleting, 
                   which preserves historical data while preventing future assignments.
                 </p>
               </div>

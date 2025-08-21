@@ -22,7 +22,7 @@ export default function RecentNotificationsWidget({
     if (profile?.id) {
       fetchNotifications();
     }
-  }, [profile?.id, limit]);
+  }, [profile?.id, limit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchNotifications = async () => {
     if (!profile?.id) return;
@@ -194,7 +194,7 @@ export default function RecentNotificationsWidget({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
           </svg>
           <h4 className="mt-2 text-sm font-medium text-gray-300">No notifications</h4>
-          <p className="mt-1 text-sm text-gray-400">You're all caught up!</p>
+          <p className="mt-1 text-sm text-gray-400">You&apos;re all caught up!</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -228,9 +228,9 @@ export default function RecentNotificationsWidget({
                 <p className="text-sm text-gray-400 mt-1 line-clamp-2">
                   {notification.message}
                 </p>
-                {notification.data?.customer_name && (
+                {(notification.data as { customer_name?: string })?.customer_name && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Customer: {notification.data.customer_name}
+                    Customer: {(notification.data as { customer_name: string }).customer_name}
                   </p>
                 )}
               </div>

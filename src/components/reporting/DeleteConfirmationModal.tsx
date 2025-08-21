@@ -48,7 +48,7 @@ export default function DeleteConfirmationModal({
                 Are you sure?
               </h4>
               <p className="text-gray-300 mt-1">
-                This action cannot be undone. This will permanently delete the report "{report.name}" and remove all associated data.
+                This action cannot be undone. This will permanently delete the report &quot;{report.name}&quot; and remove all associated data.
               </p>
             </div>
           </div>

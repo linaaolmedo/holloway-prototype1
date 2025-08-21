@@ -42,12 +42,12 @@ export default function CarrierDashboardPage() {
     if (profile?.carrier_id) {
       loadCarrierLoads();
     }
-  }, [profile]);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Apply filters
   useEffect(() => {
     applyFilters();
-  }, [loads, filters]);
+  }, [loads, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadCarrierLoads = async () => {
     if (!profile?.carrier_id) return;
@@ -144,7 +144,7 @@ export default function CarrierDashboardPage() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getLocationString = (location: any) => {
+  const getLocationString = (location: { city?: string | null; state?: string | null } | null | undefined) => {
     if (!location) return 'N/A';
     return `${location.city}, ${location.state}`;
   };

@@ -24,7 +24,7 @@ export default function CarriersFilters({
     setLocalFilters(filters);
   }, [filters]);
 
-  const handleFilterChange = (key: keyof CarrierFilters, value: any) => {
+  const handleFilterChange = (key: keyof CarrierFilters, value: string | boolean | undefined) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
@@ -150,7 +150,7 @@ export default function CarriersFilters({
             
             {localFilters.search && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-600 text-red-100">
-                Search: "{localFilters.search}"
+                Search: &quot;{localFilters.search}&quot;
                 <button
                   onClick={() => handleFilterChange('search', undefined)}
                   className="ml-1 text-red-200 hover:text-white"

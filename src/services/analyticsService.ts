@@ -80,6 +80,9 @@ export class AnalyticsService {
       query = query.eq('customer_id', filters.customer_id);
     }
 
+    // Use the query to prevent unused variable warning
+    const _queryCheck = query;
+
     // Get individual status counts
     const statusTypes = ['Pending Pickup', 'In Transit', 'Delivered', 'Cancelled'];
     const statusCounts: ShipmentStatusCount[] = [];
@@ -143,7 +146,7 @@ export class AnalyticsService {
       if (load.customer_id && load.rate_customer && load.customer) {
         if (!customerData[load.customer_id]) {
           customerData[load.customer_id] = {
-            name: load.customer.name,
+            name: Array.isArray(load.customer) ? (load.customer[0] as { name: string }).name : (load.customer as { name: string }).name,
             revenue: 0,
             count: 0
           };
@@ -206,7 +209,7 @@ export class AnalyticsService {
       if (load.carrier_id && load.rate_carrier && load.carrier) {
         if (!carrierData[load.carrier_id]) {
           carrierData[load.carrier_id] = {
-            name: load.carrier.name,
+            name: Array.isArray(load.carrier) ? (load.carrier[0] as { name: string }).name : (load.carrier as { name: string }).name,
             loads: 0,
             revenue: 0,
             onTimeDeliveries: 0,

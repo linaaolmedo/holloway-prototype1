@@ -26,7 +26,7 @@ export class CarrierService {
     return data.map(carrier => ({
       ...carrier,
       equipment_types: carrier.carrier_equipment_types?.map(
-        (cet: any) => cet.equipment_types
+        (cet: { equipment_types: unknown }) => cet.equipment_types
       ) || []
     }));
   }
@@ -55,7 +55,7 @@ export class CarrierService {
     return {
       ...data,
       equipment_types: data.carrier_equipment_types?.map(
-        (cet: any) => cet.equipment_types
+        (cet: { equipment_types: unknown }) => cet.equipment_types
       ) || []
     };
   }
@@ -300,14 +300,14 @@ export class CarrierService {
     let carriers = data.map(carrier => ({
       ...carrier,
       equipment_types: carrier.carrier_equipment_types?.map(
-        (cet: any) => cet.equipment_types
+        (cet: { equipment_types: unknown }) => cet.equipment_types
       ) || []
     }));
 
     // Filter by equipment type if specified
     if (filters.equipment_type) {
       carriers = carriers.filter(carrier =>
-        carrier.equipment_types.some(et => et.name === filters.equipment_type)
+        carrier.equipment_types.some((et: { name: string }) => et.name === filters.equipment_type)
       );
     }
 

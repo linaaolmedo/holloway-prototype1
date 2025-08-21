@@ -44,7 +44,7 @@ export default function NewShipmentRequestForm({
     if (profile?.customer_id) {
       fetchFormData();
     }
-  }, [profile]);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchFormData = async () => {
     if (!profile?.customer_id) return;
@@ -144,11 +144,11 @@ export default function NewShipmentRequestForm({
     return tomorrow.toISOString().split('T')[0];
   };
 
-  const getNextWeekDate = (): string => {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    return nextWeek.toISOString().split('T')[0];
-  };
+  // const getNextWeekDate = (): string => {
+  //   const nextWeek = new Date();
+  //   nextWeek.setDate(nextWeek.getDate() + 7);
+  //   return nextWeek.toISOString().split('T')[0];
+  // };
 
   if (loadingData) {
     return (
@@ -431,7 +431,7 @@ export default function NewShipmentRequestForm({
             className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-700 text-white placeholder-gray-400"
           />
           <p className="text-gray-400 text-sm mt-1">
-            Leave blank if you'd like us to provide a quote
+            Leave blank if you&apos;d like us to provide a quote
           </p>
           {errors.rate_customer && (
             <p className="text-red-400 text-sm mt-1">{errors.rate_customer}</p>

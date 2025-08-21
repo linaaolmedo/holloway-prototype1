@@ -16,7 +16,7 @@ const COLORS = {
 };
 
 export default function ShipmentStatusChart({ data, loading = false }: ShipmentStatusChartProps) {
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { status: string; count: number; percentage: number } }> }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -36,8 +36,8 @@ export default function ShipmentStatusChart({ data, loading = false }: ShipmentS
     return null;
   };
 
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    if (percent < 0.05) return null; // Don't show labels for very small slices
+  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: { cx?: number; cy?: number; midAngle?: number; innerRadius?: number; outerRadius?: number; percent?: number }) => {
+    if (!percent || percent < 0.05 || !cx || !cy || !midAngle || !innerRadius || !outerRadius) return null; // Don't show labels for very small slices
     
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -59,19 +59,7 @@ export default function ShipmentStatusChart({ data, loading = false }: ShipmentS
     );
   };
 
-  const CustomLegend = ({ payload }: any) => (
-    <ul className="flex flex-wrap justify-center gap-4 mt-4">
-      {payload.map((entry: any, index: number) => (
-        <li key={`item-${index}`} className="flex items-center gap-2">
-          <div 
-            className="w-3 h-3 rounded-sm" 
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-sm text-gray-600">{entry.value}</span>
-        </li>
-      ))}
-    </ul>
-  );
+
 
   if (loading) {
     return (
@@ -106,7 +94,7 @@ export default function ShipmentStatusChart({ data, loading = false }: ShipmentS
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend content={<CustomLegend />} />
+          <Legend />
         </PieChart>
       </ResponsiveContainer>
     </div>

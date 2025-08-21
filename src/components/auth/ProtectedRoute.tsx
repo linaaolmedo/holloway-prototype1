@@ -26,7 +26,7 @@ export default function ProtectedRoute({
         return;
       }
 
-      // If user doesn't have required role, redirect
+      // If user doesn&apos;t have required role, redirect
       if (requiredRoles.length > 0 && profile && !requiredRoles.includes(profile.role)) {
         router.push('/unauthorized');
         return;
@@ -43,12 +43,12 @@ export default function ProtectedRoute({
     );
   }
 
-  // If no user, don't render children (redirect will happen)
+  // If no user, don&apos;t render children (redirect will happen)
   if (!user) {
     return null;
   }
 
-  // If role requirements not met, don't render children
+  // If role requirements not met, don&apos;t render children
   if (requiredRoles.length > 0 && profile && !requiredRoles.includes(profile.role)) {
     return null;
   }

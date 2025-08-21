@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/auth/LoadingSpinner';
 
 export default function ResetPasswordPage() {
@@ -14,7 +14,6 @@ export default function ResetPasswordPage() {
 
   const { updatePassword, signOut, user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Check if user is authenticated (they should be after clicking the email link)
   useEffect(() => {
@@ -166,7 +165,7 @@ export default function ResetPasswordPage() {
                   </svg>
                   <div>
                     <p className="text-green-300 text-sm font-medium">Password Updated Successfully!</p>
-                    <p className="text-green-400 text-xs mt-1">You'll be signed out and redirected to login with your new password.</p>
+                    <p className="text-green-400 text-xs mt-1">You&apos;ll be signed out and redirected to login with your new password.</p>
                   </div>
                 </div>
               </div>
@@ -240,7 +239,7 @@ export default function ResetPasswordPage() {
 
               <button
                 type="submit"
-                disabled={isLoading || success}
+                disabled={isLoading || !!success}
                 className={`w-full py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
                   success 
                     ? 'bg-green-600 text-white' 

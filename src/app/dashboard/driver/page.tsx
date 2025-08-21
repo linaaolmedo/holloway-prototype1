@@ -37,7 +37,7 @@ export default function DriverDashboard() {
   // Initial load
   useEffect(() => {
     loadDashboardData();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle status updates
   const handleStatusUpdate = async (status: 'In Transit' | 'Delivered') => {
