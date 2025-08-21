@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { InvoiceWithDetails } from '@/types/billing';
-import { BillingService } from '@/services/billingService';
 
 interface InvoicePreviewModalProps {
   isOpen: boolean;
@@ -124,8 +122,8 @@ export default function InvoicePreviewModal({
                 <h3 className="text-lg font-semibold text-red-500 mb-3">Bill To:</h3>
                 <div className="text-gray-800">
                   <p className="font-semibold">{invoice.customer?.name || 'Unknown Customer'}</p>
-                  <p>Email: {invoice.customer?.email || 'N/A'}</p>
-                  <p>Phone: {invoice.customer?.phone || 'N/A'}</p>
+                  <p>Email: {invoice.customer?.primary_contact_email || 'N/A'}</p>
+                  <p>Phone: {invoice.customer?.primary_contact_phone || 'N/A'}</p>
                 </div>
               </div>
               <div>
@@ -158,13 +156,17 @@ export default function InvoicePreviewModal({
                         <tr key={load.id} className="hover:bg-gray-50">
                           <td className="border border-gray-300 px-4 py-2">{load.id}</td>
                           <td className="border border-gray-300 px-4 py-2">{load.commodity || 'N/A'}</td>
-                          <td className="border border-gray-300 px-4 py-2">{load.pickup_location || 'N/A'}</td>
-                          <td className="border border-gray-300 px-4 py-2">{load.delivery_location || 'N/A'}</td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            {load.origin_location ? `${load.origin_location.city || ''}, ${load.origin_location.state || ''}`.trim().replace(/,$/, '') || 'N/A' : 'N/A'}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            {load.destination_location ? `${load.destination_location.city || ''}, ${load.destination_location.state || ''}`.trim().replace(/,$/, '') || 'N/A' : 'N/A'}
+                          </td>
                           <td className="border border-gray-300 px-4 py-2">
                             {load.delivery_date ? formatDate(load.delivery_date) : 'N/A'}
                           </td>
                           <td className="border border-gray-300 px-4 py-2 text-right font-semibold">
-                            {formatCurrency(load.rate)}
+                            {formatCurrency(load.rate_customer)}
                           </td>
                         </tr>
                       ))
