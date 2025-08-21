@@ -23,3 +23,4 @@ CHECK (type IN (
 SELECT type, COUNT(*) as count FROM notifications GROUP BY type;
 
 
+
