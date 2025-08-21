@@ -15,8 +15,12 @@ import BillingSummaryCards from '@/components/billing/BillingSummaryCards';
 import BillingFilters from '@/components/billing/BillingFilters';
 import BillingTable from '@/components/billing/BillingTable';
 import CreateInvoiceModal from '@/components/billing/CreateInvoiceModal';
+import InvoiceSuccessModal from '@/components/billing/InvoiceSuccessModal';
+import InvoicePreviewModal from '@/components/billing/InvoicePreviewModal';
+import { useToast } from '@/components/common/Toast';
 
 export default function BillingPage() {
+  const { showToast, ToastContainer } = useToast();
   const [activeTab, setActiveTab] = useState<'ready' | 'outstanding' | 'paid'>('ready');
   const [summary, setSummary] = useState<BillingSummary>({
     ready_to_invoice: { count: 0, amount: 0 },
@@ -32,6 +36,11 @@ export default function BillingPage() {
   const [createInvoiceModalOpen, setCreateInvoiceModalOpen] = useState(false);
   const [selectedLoadsForInvoice, setSelectedLoadsForInvoice] = useState<LoadReadyForInvoice[]>([]);
   const [createInvoiceLoading, setCreateInvoiceLoading] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [createdInvoice, setCreatedInvoice] = useState<InvoiceWithDetails | null>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewInvoice, setPreviewInvoice] = useState<InvoiceWithDetails | null>(null);
 
   const tabs: BillingTab[] = [
     {
@@ -159,22 +168,26 @@ export default function BillingPage() {
   const handleInvoiceSubmit = async (invoiceData: CreateInvoiceData) => {
     try {
       setCreateInvoiceLoading(true);
-      await BillingService.createInvoice(invoiceData);
+      const createdInvoice = await BillingService.createInvoice(invoiceData);
       
-      // Close modal and refresh data
+      // Close create modal and clear state
       setCreateInvoiceModalOpen(false);
       setSelectedLoadsForInvoice([]);
       setSelectedItems([]);
       
+      // Show success modal with created invoice
+      setCreatedInvoice(createdInvoice);
+      setSuccessModalOpen(true);
+      
       // Refresh summary and table data
       loadSummary();
       loadTableData();
-
-      // Show success message
-      alert('Invoice created successfully!');
     } catch (error) {
       console.error('Error creating invoice:', error);
-      alert('Failed to create invoice. Please try again.');
+      
+      // Show error toast
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showToast(`Failed to create invoice: ${errorMessage}`, 'error');
     } finally {
       setCreateInvoiceLoading(false);
     }
@@ -188,16 +201,52 @@ export default function BillingPage() {
       loadSummary();
       loadTableData();
 
-      alert('Invoice marked as paid successfully!');
+      showToast('Invoice marked as paid successfully!', 'success');
     } catch (error) {
       console.error('Error marking invoice as paid:', error);
-      alert('Failed to mark invoice as paid. Please try again.');
+      showToast('Failed to mark invoice as paid. Please try again.', 'error');
     }
   };
 
   const handleViewInvoice = (invoice: InvoiceWithDetails) => {
-    // For now, just show an alert. In a real app, this would open a detailed invoice view
-    alert(`Viewing invoice ${invoice.invoice_number || `INV-${invoice.id}`}`);
+    setPreviewInvoice(invoice);
+    setPreviewModalOpen(true);
+  };
+
+  const handleDownloadPDF = async (invoice: InvoiceWithDetails) => {
+    try {
+      setDownloadingPDF(true);
+      await BillingService.downloadInvoicePDF(invoice);
+      showToast('PDF download started successfully!', 'success');
+    } catch (error) {
+      console.error('Error downloading invoice PDF:', error);
+      showToast('Failed to download invoice PDF. Please try again.', 'error');
+    } finally {
+      setDownloadingPDF(false);
+    }
+  };
+
+  const handleSuccessModalClose = () => {
+    setSuccessModalOpen(false);
+    setCreatedInvoice(null);
+    setDownloadingPDF(false);
+  };
+
+  const handleViewInvoiceFromSuccess = (invoice: InvoiceWithDetails) => {
+    handleViewInvoice(invoice);
+  };
+
+  const handleDownloadPDFFromSuccess = async (invoice: InvoiceWithDetails) => {
+    await handleDownloadPDF(invoice);
+  };
+
+  const handlePreviewModalClose = () => {
+    setPreviewModalOpen(false);
+    setPreviewInvoice(null);
+  };
+
+  const handleDownloadPDFFromPreview = async (invoice: InvoiceWithDetails) => {
+    await handleDownloadPDF(invoice);
   };
 
   return (
@@ -250,6 +299,7 @@ export default function BillingPage() {
         onCreateInvoice={handleCreateInvoice}
         onViewInvoice={handleViewInvoice}
         onMarkPaid={handleMarkPaid}
+        onDownloadPDF={handleDownloadPDF}
       />
 
       {/* Create Invoice Modal */}
@@ -263,6 +313,28 @@ export default function BillingPage() {
         selectedLoads={selectedLoadsForInvoice}
         loading={createInvoiceLoading}
       />
+
+      {/* Success Modal */}
+      <InvoiceSuccessModal
+        isOpen={successModalOpen}
+        onClose={handleSuccessModalClose}
+        invoice={createdInvoice}
+        onDownloadPDF={handleDownloadPDFFromSuccess}
+        onViewInvoice={handleViewInvoiceFromSuccess}
+        isDownloading={downloadingPDF}
+      />
+
+      {/* Invoice Preview Modal */}
+      <InvoicePreviewModal
+        isOpen={previewModalOpen}
+        onClose={handlePreviewModalClose}
+        invoice={previewInvoice}
+        onDownloadPDF={handleDownloadPDFFromPreview}
+        isDownloading={downloadingPDF}
+      />
+
+      {/* Toast Notifications */}
+      <ToastContainer />
     </div>
   );
 }

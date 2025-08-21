@@ -7,6 +7,7 @@ export interface Invoice {
   total_amount: number | null;
   is_paid: boolean;
   paid_date: string | null;
+  pdf_path: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -114,6 +115,7 @@ export interface BillingTableProps {
   onCreateInvoice?: (loads: LoadReadyForInvoice[]) => void;
   onViewInvoice?: (invoice: InvoiceWithDetails) => void;
   onMarkPaid?: (invoice: InvoiceWithDetails) => void;
+  onDownloadPDF?: (invoice: InvoiceWithDetails) => void;
 }
 
 export interface CreateInvoiceModalProps {

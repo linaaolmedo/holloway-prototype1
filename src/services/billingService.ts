@@ -8,6 +8,7 @@ import {
   BillingSummary,
   Customer
 } from '@/types/billing';
+import { PDFService } from './pdfService';
 
 export class BillingService {
   // Get all invoices with related data
@@ -155,19 +156,24 @@ export class BillingService {
     // Generate invoice number
     const invoiceNumber = await this.generateInvoiceNumber();
 
+    // Calculate due date if not provided
+    const calculatedDueDate = due_date || await this.calculateDueDate(customer_id);
+
     // Create invoice
+    const invoiceRecord = {
+      invoice_number: invoiceNumber,
+      customer_id,
+      date_created: new Date().toISOString().split('T')[0],
+      due_date: calculatedDueDate,
+      total_amount: totalAmount,
+      is_paid: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
-      .insert([{
-        invoice_number: invoiceNumber,
-        customer_id,
-        date_created: new Date().toISOString().split('T')[0],
-        due_date: due_date || this.calculateDueDate(customer_id),
-        total_amount: totalAmount,
-        is_paid: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }])
+      .insert([invoiceRecord])
       .select()
       .single();
 
@@ -187,6 +193,9 @@ export class BillingService {
     if (updateError) {
       throw new Error(`Failed to update loads with invoice ID: ${updateError.message}`);
     }
+
+    // Generate PDF for the invoice (async, don't wait for completion)
+    this.generateInvoicePDFAsync(invoice.id);
 
     // Trigger analytics refresh
     if (typeof window !== 'undefined') {
@@ -383,5 +392,50 @@ export class BillingService {
     dueDate.setDate(dueDate.getDate() + paymentTerms);
     
     return dueDate.toISOString().split('T')[0];
+  }
+
+  // Generate PDF for invoice asynchronously
+  private static async generateInvoicePDFAsync(invoiceId: number): Promise<void> {
+    try {
+      const invoice = await this.getInvoiceById(invoiceId);
+      await PDFService.generateInvoicePDF(invoice);
+    } catch (error) {
+      console.error('Error generating PDF for invoice:', invoiceId, error);
+    }
+  }
+
+  // Download invoice PDF
+  static async downloadInvoicePDF(invoice: InvoiceWithDetails): Promise<void> {
+    try {
+      await PDFService.downloadInvoicePDF(invoice);
+    } catch (error) {
+      console.error('Error downloading invoice PDF:', error);
+      throw new Error('Failed to download invoice PDF. Please try again.');
+    }
+  }
+
+  // Open invoice for printing (fallback when PDF is not available)
+  static openInvoiceForPrint(invoice: InvoiceWithDetails): void {
+    try {
+      PDFService.openInvoiceForPrint(invoice);
+    } catch (error) {
+      console.error('Error opening invoice for print:', error);
+      throw new Error('Failed to open invoice for printing. Please try again.');
+    }
+  }
+
+  // Check if invoice has PDF available
+  static async hasInvoicePDF(invoice: InvoiceWithDetails): Promise<boolean> {
+    return !!invoice.pdf_path;
+  }
+
+  // Regenerate invoice PDF
+  static async regenerateInvoicePDF(invoice: InvoiceWithDetails): Promise<string> {
+    try {
+      return await PDFService.generateInvoicePDF(invoice);
+    } catch (error) {
+      console.error('Error regenerating invoice PDF:', error);
+      throw new Error('Failed to regenerate invoice PDF. Please try again.');
+    }
   }
 }
