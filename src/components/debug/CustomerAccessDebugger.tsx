@@ -87,12 +87,26 @@ export default function CustomerAccessDebugger() {
         alert('Failed to update user role: ' + error.message);
       } else {
         console.log('Successfully updated user role:', data);
-        alert('User role updated to Dispatcher. Please refresh the page.');
-        window.location.reload();
+        alert('User role updated to Dispatcher. Logging out to refresh session...');
+        
+        // Force sign out and reload to refresh auth context
+        await supabase.auth.signOut();
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Error fixing user role:', error);
       alert('Failed to fix user role');
+    }
+  };
+
+  const forceAuthRefresh = async () => {
+    try {
+      alert('Forcing auth refresh. You will be redirected to login.');
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error refreshing auth:', error);
+      alert('Please manually log out and log back in.');
     }
   };
 
@@ -128,6 +142,12 @@ export default function CustomerAccessDebugger() {
             className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
           >
             Fix Role to Dispatcher
+          </button>
+          <button
+            onClick={forceAuthRefresh}
+            className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors"
+          >
+            Force Auth Refresh
           </button>
         </div>
       </div>
