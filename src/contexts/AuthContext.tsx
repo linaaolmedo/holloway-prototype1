@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
 
-      let role: UserRole = 'Driver'; // Default to Driver for company.com emails
+      let role: UserRole = 'Dispatcher'; // Default to Dispatcher for admin access
       let name = authUser.user.email?.split('@')[0] || 'Unknown User';
 
       // If found in drivers table, use their name and confirm driver role
@@ -90,18 +90,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name = driverData.name;
         role = 'Driver';
       } else if (authUser.user.email?.includes('@company.com')) {
-        // This is likely a driver account, keep Driver role
+        // Company emails are drivers unless specified otherwise
         role = 'Driver';
-        // Capitalize the first letter of the name
         name = name.charAt(0).toUpperCase() + name.slice(1);
       } else {
-        // Check other patterns for different user types
-        if (authUser.user.email?.includes('dispatcher')) {
-          role = 'Dispatcher';
-        } else if (authUser.user.email?.includes('customer')) {
+        // For external emails, use intelligent role detection
+        const email = authUser.user.email?.toLowerCase() || '';
+        
+        if (email.includes('driver') || email.includes('@company.com')) {
+          role = 'Driver';
+        } else if (email.includes('customer') || email.includes('client')) {
           role = 'Customer';
-        } else if (authUser.user.email?.includes('carrier')) {
+        } else if (email.includes('carrier') || email.includes('transport')) {
           role = 'Carrier';
+        } else {
+          // Default to Dispatcher for admin/management accounts
+          // This ensures the first user and admins get full access
+          role = 'Dispatcher';
         }
       }
 
