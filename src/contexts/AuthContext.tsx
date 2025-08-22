@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
@@ -38,19 +38,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Prevent infinite loops in profile fetching
-  const [profileFetching, setProfileFetching] = useState(false);
-  const [profileCreating, setProfileCreating] = useState(false);
+  // Simple flags to prevent loops
+  const profileFetchingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
   // Fetch user profile from our public.users table
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
-    // Prevent infinite loops
-    if (profileFetching) {
-      console.log('Profile fetch already in progress, skipping...');
-      return null;
+    // Prevent infinite loops using refs
+    if (profileFetchingRef.current || lastUserIdRef.current === userId) {
+      console.log('Profile fetch already in progress or same user, skipping...');
+      return profile; // Return existing profile if same user
     }
     
-    setProfileFetching(true);
+    profileFetchingRef.current = true;
+    lastUserIdRef.current = userId;
     
     try {
       console.log('Fetching user profile for:', userId);
@@ -62,37 +63,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         // If user profile doesn't exist, try to create one (but only once)
-        if (error.code === 'PGRST116' && !profileCreating) {
+        if (error.code === 'PGRST116') {
           console.log('User profile not found, attempting to create one...');
           const newProfile = await createUserProfile(userId);
-          setProfileFetching(false);
+          profileFetchingRef.current = false;
           return newProfile;
         }
         console.error('Error fetching user profile:', error);
-        setProfileFetching(false);
+        profileFetchingRef.current = false;
         return null;
       }
 
       console.log('Successfully fetched user profile:', data);
-      setProfileFetching(false);
+      profileFetchingRef.current = false;
       return data;
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setProfileFetching(false);
+      profileFetchingRef.current = false;
       return null;
     }
   };
 
   // Create user profile when it doesn't exist
   const createUserProfile = async (userId: string): Promise<UserProfile | null> => {
-    // Prevent infinite loops
-    if (profileCreating) {
-      console.log('Profile creation already in progress, skipping...');
-      return null;
-    }
-    
-    setProfileCreating(true);
-    
     try {
       console.log('Creating user profile for:', userId);
       
@@ -100,7 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = user;
       if (!currentUser) {
         console.error('No current user available for profile creation');
-        setProfileCreating(false);
         return null;
       }
 
@@ -157,16 +149,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (createError) {
         console.error('Error creating user profile:', createError);
-        setProfileCreating(false);
         return null;
       }
 
       console.log('Successfully created user profile:', newProfile);
-      setProfileCreating(false);
       return newProfile;
     } catch (error) {
       console.error('Error creating user profile:', error);
-      setProfileCreating(false);
       return null;
     }
   };
@@ -218,7 +207,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!profile || profile.id !== session.user.id) {
             console.log('Fetching profile for user:', session.user.id);
             const userProfile = await fetchUserProfile(session.user.id);
-            setProfile(userProfile);
+            if (userProfile) {
+              setProfile(userProfile);
+            }
           } else {
             console.log('Profile already loaded, skipping fetch');
           }
@@ -226,8 +217,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Clear profile when user signs out
           console.log('User signed out, clearing profile');
           setProfile(null);
-          setProfileFetching(false);
-          setProfileCreating(false);
+          profileFetchingRef.current = false;
+          lastUserIdRef.current = null;
         }
 
         setLoading(false);
