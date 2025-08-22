@@ -37,10 +37,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Prevent infinite loops in profile fetching
+  const [profileFetching, setProfileFetching] = useState(false);
+  const [profileCreating, setProfileCreating] = useState(false);
 
   // Fetch user profile from our public.users table
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+    // Prevent infinite loops
+    if (profileFetching) {
+      console.log('Profile fetch already in progress, skipping...');
+      return null;
+    }
+    
+    setProfileFetching(true);
+    
     try {
+      console.log('Fetching user profile for:', userId);
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -48,30 +61,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        // If user profile doesn't exist, try to create one
-        if (error.code === 'PGRST116') {
+        // If user profile doesn't exist, try to create one (but only once)
+        if (error.code === 'PGRST116' && !profileCreating) {
           console.log('User profile not found, attempting to create one...');
-          return await createUserProfile(userId);
+          const newProfile = await createUserProfile(userId);
+          setProfileFetching(false);
+          return newProfile;
         }
         console.error('Error fetching user profile:', error);
+        setProfileFetching(false);
         return null;
       }
 
+      console.log('Successfully fetched user profile:', data);
+      setProfileFetching(false);
       return data;
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      setProfileFetching(false);
       return null;
     }
   };
 
   // Create user profile when it doesn't exist
   const createUserProfile = async (userId: string): Promise<UserProfile | null> => {
+    // Prevent infinite loops
+    if (profileCreating) {
+      console.log('Profile creation already in progress, skipping...');
+      return null;
+    }
+    
+    setProfileCreating(true);
+    
     try {
-      // Get user info from auth.users
-      const { data: authUser, error: authError } = await supabase.auth.getUser();
+      console.log('Creating user profile for:', userId);
       
-      if (authError || !authUser.user) {
-        console.error('Error getting auth user:', authError);
+      // Get basic user info from current session instead of making additional calls
+      const currentUser = user;
+      if (!currentUser) {
+        console.error('No current user available for profile creation');
+        setProfileCreating(false);
         return null;
       }
 
@@ -83,19 +112,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       let role: UserRole = 'Dispatcher'; // Default to Dispatcher for admin access
-      let name = authUser.user.email?.split('@')[0] || 'Unknown User';
+      let name = currentUser.email?.split('@')[0] || 'Unknown User';
 
       // If found in drivers table, use their name and confirm driver role
       if (driverData) {
         name = driverData.name;
         role = 'Driver';
-      } else if (authUser.user.email?.includes('@company.com')) {
+      } else if (currentUser.email?.includes('@company.com')) {
         // Company emails are drivers unless specified otherwise
         role = 'Driver';
         name = name.charAt(0).toUpperCase() + name.slice(1);
       } else {
         // For external emails, use intelligent role detection
-        const email = authUser.user.email?.toLowerCase() || '';
+        const email = currentUser.email?.toLowerCase() || '';
         
         if (email.includes('driver') || email.includes('@company.com')) {
           role = 'Driver';
@@ -117,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: userId,
           role: role,
           name: name,
-          email: authUser.user.email,
+          email: currentUser.email,
           customer_id: null,
           carrier_id: null,
           created_at: new Date().toISOString(),
@@ -128,13 +157,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (createError) {
         console.error('Error creating user profile:', createError);
+        setProfileCreating(false);
         return null;
       }
 
       console.log('Successfully created user profile:', newProfile);
+      setProfileCreating(false);
       return newProfile;
     } catch (error) {
       console.error('Error creating user profile:', error);
+      setProfileCreating(false);
       return null;
     }
   };
@@ -182,12 +214,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Fetch user profile when user signs in
-          const userProfile = await fetchUserProfile(session.user.id);
-          setProfile(userProfile);
+          // Only fetch profile if we don't have one or user changed
+          if (!profile || profile.id !== session.user.id) {
+            console.log('Fetching profile for user:', session.user.id);
+            const userProfile = await fetchUserProfile(session.user.id);
+            setProfile(userProfile);
+          } else {
+            console.log('Profile already loaded, skipping fetch');
+          }
         } else {
           // Clear profile when user signs out
+          console.log('User signed out, clearing profile');
           setProfile(null);
+          setProfileFetching(false);
+          setProfileCreating(false);
         }
 
         setLoading(false);
