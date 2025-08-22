@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { Report, CreateReportData, UpdateReportData, ReportSearchFilters } from '@/types/reports';
 import { ReportService } from '@/services/reportService';

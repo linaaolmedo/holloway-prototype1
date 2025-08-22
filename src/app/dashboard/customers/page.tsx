@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback } from 'react';
 import { CustomerWithLocations, CustomerFilters, CreateCustomerData } from '@/types/customers';
 import { CustomerService } from '@/services/customerService';

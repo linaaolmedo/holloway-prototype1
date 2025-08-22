@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';

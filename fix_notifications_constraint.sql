@@ -24,3 +24,5 @@ SELECT type, COUNT(*) as count FROM notifications GROUP BY type;
 
 
 
+
+

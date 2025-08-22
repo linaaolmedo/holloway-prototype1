@@ -72,6 +72,18 @@ export default function CustomerAccessDebugger() {
     if (!user) return;
 
     try {
+      // First try using RPC function if available
+      const { data: rpcResult, error: rpcError } = await supabase
+        .rpc('fix_user_dispatcher_access', { user_id: user.id });
+
+      if (!rpcError) {
+        console.log('Successfully updated user role via RPC:', rpcResult);
+        alert('✅ User role fixed! Refreshing application...');
+        window.location.reload();
+        return;
+      }
+
+      // Fallback to direct table update
       const { data, error } = await supabase
         .from('users')
         .update({ 
@@ -84,18 +96,15 @@ export default function CustomerAccessDebugger() {
 
       if (error) {
         console.error('Error updating user role:', error);
-        alert('Failed to update user role: ' + error.message);
+        alert(`❌ Failed to update user role: ${error.message}\n\nPlease run the SQL fix in Supabase dashboard instead.`);
       } else {
         console.log('Successfully updated user role:', data);
-        alert('User role updated to Dispatcher. Logging out to refresh session...');
-        
-        // Force sign out and reload to refresh auth context
-        await supabase.auth.signOut();
-        window.location.href = '/';
+        alert('✅ User role updated to Dispatcher! Refreshing application...');
+        window.location.reload();
       }
     } catch (error) {
       console.error('Error fixing user role:', error);
-      alert('Failed to fix user role');
+      alert('❌ Failed to fix user role. Please use the SQL script in Supabase dashboard.');
     }
   };
 

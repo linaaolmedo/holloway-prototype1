@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback } from 'react';
 import { BillingService } from '@/services/billingService';
 import { 
@@ -18,6 +21,8 @@ import CreateInvoiceModal from '@/components/billing/CreateInvoiceModal';
 import InvoiceSuccessModal from '@/components/billing/InvoiceSuccessModal';
 import InvoicePreviewModal from '@/components/billing/InvoicePreviewModal';
 import { useToast } from '@/components/common/Toast';
+import BillingDataDebugger from '@/components/debug/BillingDataDebugger';
+import EnvironmentDebugger from '@/components/debug/EnvironmentDebugger';
 
 export default function BillingPage() {
   const { showToast, ToastContainer } = useToast();
@@ -258,6 +263,10 @@ export default function BillingPage() {
           Manage invoices and track payments for all delivered loads.
         </p>
       </div>
+
+      {/* Debug Components - Remove these after debugging */}
+      <BillingDataDebugger />
+      <EnvironmentDebugger />
 
       {/* Summary Cards */}
       <BillingSummaryCards summary={summary} loading={summaryLoading} />

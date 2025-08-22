@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { CarrierWithEquipment, CreateCarrierData, UpdateCarrierData, CarrierFilters, EquipmentType } from '@/types/carriers';
 import { CarrierService } from '@/services/carrierService';

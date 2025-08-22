@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { LoadWithDetails, LoadStatus, Driver, Truck, Trailer, Carrier } from '@/types/loads';

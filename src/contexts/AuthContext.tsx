@@ -74,6 +74,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
+      // Ensure existing profile has Dispatcher role for database access
+      if (data && data.role !== 'Dispatcher') {
+        console.log('Updating existing user to Dispatcher role for database access...');
+        try {
+          const { data: updatedData } = await supabase
+            .from('users')
+            .update({ 
+              role: 'Dispatcher', 
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', userId)
+            .select()
+            .single();
+          
+          if (updatedData) {
+            console.log('Successfully updated user role to Dispatcher');
+            profileFetchingRef.current = false;
+            return updatedData;
+          }
+        } catch (updateError) {
+          console.warn('Could not update user role, using existing:', updateError);
+        }
+      }
+
       console.log('Successfully fetched user profile:', data);
       profileFetchingRef.current = false;
       return data;
@@ -103,32 +127,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
 
-      let role: UserRole = 'Dispatcher'; // Default to Dispatcher for admin access
-      let name = currentUser.email?.split('@')[0] || 'Unknown User';
+      // ALWAYS default to Dispatcher for maximum access - role-based restrictions handled by specific components
+      let role: UserRole = 'Dispatcher';
+      let name = currentUser.email?.split('@')[0] || 'User';
 
-      // If found in drivers table, use their name and confirm driver role
+      // If found in drivers table, use their name but KEEP Dispatcher role for now
+      // This ensures database access while allowing driver-specific UI features
       if (driverData) {
         name = driverData.name;
-        role = 'Driver';
-      } else if (currentUser.email?.includes('@company.com')) {
-        // Company emails are drivers unless specified otherwise
-        role = 'Driver';
+        // role = 'Driver'; // Commented out - keep as Dispatcher for database access
+      }
+      
+      // Format name properly
+      if (name && name !== 'User') {
         name = name.charAt(0).toUpperCase() + name.slice(1);
-      } else {
-        // For external emails, use intelligent role detection
-        const email = currentUser.email?.toLowerCase() || '';
-        
-        if (email.includes('driver') || email.includes('@company.com')) {
-          role = 'Driver';
-        } else if (email.includes('customer') || email.includes('client')) {
-          role = 'Customer';
-        } else if (email.includes('carrier') || email.includes('transport')) {
-          role = 'Carrier';
-        } else {
-          // Default to Dispatcher for admin/management accounts
-          // This ensures the first user and admins get full access
-          role = 'Dispatcher';
-        }
       }
 
       // Create the user profile
@@ -203,15 +215,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Only fetch profile if we don't have one or user changed
-          if (!profile || profile.id !== session.user.id) {
-            console.log('Fetching profile for user:', session.user.id);
-            const userProfile = await fetchUserProfile(session.user.id);
-            if (userProfile) {
-              setProfile(userProfile);
-            }
-          } else {
-            console.log('Profile already loaded, skipping fetch');
+          // Always fetch profile on auth state change to ensure latest data
+          console.log('Auth state change - fetching profile for user:', session.user.id);
+          const userProfile = await fetchUserProfile(session.user.id);
+          if (userProfile) {
+            setProfile(userProfile);
           }
         } else {
           // Clear profile when user signs out

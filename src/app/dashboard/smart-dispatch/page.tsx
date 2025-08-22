@@ -1,3 +1,8 @@
+'use client';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import UnderConstruction from '../components/UnderConstruction';
 
 export default function SmartDispatchPage() {

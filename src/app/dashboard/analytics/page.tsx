@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnalyticsService } from '@/services/analyticsService';
 import { AnalyticsDashboard } from '@/types/analytics';

@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import CustomerPortalDashboard from '@/components/customers/CustomerPortalDashboard';

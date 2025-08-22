@@ -17,7 +17,8 @@ const setAuditContext = async (): Promise<void> => {
 
 export class CustomerService {
   static async getAllCustomers(): Promise<CustomerWithLocations[]> {
-    // TEMPORARY: Try with service role bypassing RLS
+    console.log('Starting customer fetch...');
+    
     const { data, error } = await supabase
       .from('customers')
       .select(`
@@ -27,14 +28,21 @@ export class CustomerService {
       .order('name');
 
     if (error) {
-      console.error('Error fetching customers:', error);
-      console.error('RLS might be blocking access. Error details:', error);
+      console.error('ERROR: Failed to fetch customers:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Error details:', error.details);
+      console.error('Error hint:', error.hint);
       
-      // Return empty array instead of throwing to prevent app crash
+      // Show error in console for debugging but still return empty array to prevent crashes
+      if (error.message?.includes('row-level security') || error.code === '42501') {
+        console.error('🔒 RLS POLICY BLOCKING ACCESS - User role might not match policy requirements');
+      }
+      
       return [];
     }
 
-    console.log('Successfully fetched customers:', data?.length || 0);
+    console.log('✅ Successfully fetched customers:', data?.length || 0);
     return data || [];
   }
 
