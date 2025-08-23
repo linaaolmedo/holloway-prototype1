@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import RecentActivityWidget from '@/components/common/RecentActivityWidget';
 import RecentNotificationsWidget from '@/components/notifications/RecentNotificationsWidget';
 import { DashboardService, DashboardMetrics } from '@/services/dashboardService';
+import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const { profile, user } = useAuth();
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Redirect users to their appropriate portals
@@ -167,6 +169,12 @@ export default function DashboardPage() {
             />
             Auto-refresh (15s)
           </label>
+          <button
+            onClick={() => setDebugMode(!debugMode)}
+            className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+          >
+            🔍 Debug
+          </button>
           <button 
             onClick={() => loadDashboardData(true)}
             disabled={loading}
@@ -197,6 +205,130 @@ export default function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-red-100">{error}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Debug Panel */}
+      {debugMode && (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              🔍 System Diagnostics
+            </h3>
+            <span className="text-xs text-gray-400">Debug Mode Active</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Authentication Status */}
+            <div className="bg-gray-700 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-3">🔐 Authentication</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">User ID:</span>
+                  <span className="text-white font-mono text-xs">{user?.id || 'None'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Email:</span>
+                  <span className="text-white">{user?.email || 'None'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Profile Role:</span>
+                  <span className={`${profile?.role === 'Dispatcher' ? 'text-green-400' : 'text-red-400'}`}>
+                    {profile?.role || 'NULL ❌'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Profile Name:</span>
+                  <span className="text-white">{profile?.name || 'None'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Environment Check */}
+            <div className="bg-gray-700 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-3">🌍 Environment</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Environment:</span>
+                  <span className="text-white">{process.env.NODE_ENV || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Supabase URL:</span>
+                  <span className={`${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'text-green-400' : 'text-red-400'}`}>
+                    {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Anon Key:</span>
+                  <span className={`${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'text-green-400' : 'text-red-400'}`}>
+                    {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Is Client:</span>
+                  <span className="text-white">{typeof window !== 'undefined' ? '✅ Yes' : '❌ No'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Data Status */}
+            <div className="bg-gray-700 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-3">📊 Data Status</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Metrics Loaded:</span>
+                  <span className={`${metrics ? 'text-green-400' : 'text-red-400'}`}>
+                    {metrics ? '✅ Yes' : '❌ No'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Recent Loads:</span>
+                  <span className="text-white">{recentLoads.length} items</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Loading State:</span>
+                  <span className="text-white">{loading ? '⏳ Loading' : '✅ Ready'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Auto Refresh:</span>
+                  <span className="text-white">{autoRefresh ? '✅ On' : '❌ Off'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="mt-6 flex gap-3 flex-wrap">
+            <button
+              onClick={() => console.log('User:', user, 'Profile:', profile, 'Metrics:', metrics)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+            >
+              🖨️ Log to Console
+            </button>
+            <button
+              onClick={() => window.open('/api/health', '_blank')}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm"
+            >
+              🏥 API Health Check
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm"
+            >
+              🔄 Hard Refresh
+            </button>
+          </div>
+
+          {/* Common Issues Guide */}
+          <div className="mt-6 bg-blue-900 rounded-lg p-4">
+            <h4 className="text-blue-100 font-medium mb-2">🚨 Common Issues & Fixes</h4>
+            <div className="text-blue-200 text-sm space-y-1">
+              {!profile?.role && <p>• <strong>NULL Role:</strong> Run FIX_NULL_ROLE.sql in Supabase</p>}
+              {!metrics && <p>• <strong>No Data:</strong> Run COMPREHENSIVE_VERCEL_FIXES_CORRECTED.sql</p>}
+              {error && <p>• <strong>Error Shown Above:</strong> Check database RLS policies</p>}
+              {!process.env.NEXT_PUBLIC_SUPABASE_URL && <p>• <strong>No Supabase URL:</strong> Add to .env.local</p>}
+            </div>
           </div>
         </div>
       )}
